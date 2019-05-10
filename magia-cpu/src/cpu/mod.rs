@@ -931,7 +931,7 @@ mod tests {
     use ram::{AddressBus, SUPERVISOR_PROGRAM, USER_PROGRAM, USER_DATA};
     use ram::loggingmem::Operation;
     use cpu::ops::opcodes;
-    use r68k_common::constants;
+    use constants;
 
     #[test]
     fn new_sets_pc() {

@@ -598,7 +598,7 @@ mod tests {
         })
     }
 
-    use r68k_common::constants::*;
+    use constants::*;
 
     const MASK_LO3NIB_QUICKER: u32 = MASK_LO3NIB + 0x0555;
     qc_allow_exception!(MASK_LO3NIB_QUICKER, OP_UNIMPLEMENTED_1010, qc_unimplemented_1010);
