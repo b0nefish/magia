@@ -1,5 +1,5 @@
+use super::{AddressBus, AddressSpace, ADDRBUS_MASK};
 use std::collections::HashMap;
-use super::{AddressSpace, AddressBus, ADDRBUS_MASK};
 
 const PAGE_SIZE: u32 = 16; // 16 bytes page size
 const ADDR_MASK: u32 = PAGE_SIZE - 1; // all ones
@@ -45,8 +45,8 @@ impl PagedMem {
         let shift = match address % 4 {
             0 => 24,
             1 => 16,
-            2 =>  8,
-            _ =>  0,
+            2 => 8,
+            _ => 0,
         };
         ((self.initializer >> shift) & 0xFF) as u8
     }
@@ -69,13 +69,20 @@ impl PagedMem {
     pub fn diffs(&self) -> DiffIter {
         let mut keys: Vec<u32> = self.pages.keys().cloned().collect();
         keys.sort();
-        DiffIter { pages: &self.pages, keys, offset: 0 }
+        DiffIter {
+            pages: &self.pages,
+            keys,
+            offset: 0,
+        }
     }
 }
 
 impl PagedMem {
     pub fn new(initializer: u32) -> PagedMem {
-        PagedMem { pages: HashMap::new(), initializer }
+        PagedMem {
+            pages: HashMap::new(),
+            initializer,
+        }
     }
 }
 
@@ -111,15 +118,14 @@ impl AddressBus for PagedMem {
     }
 
     fn read_word(&self, _address_space: AddressSpace, address: u32) -> u32 {
-        (self.read_u8(address) << 8
-        |self.read_u8(address.wrapping_add(1))) as u32
+        (self.read_u8(address) << 8 | self.read_u8(address.wrapping_add(1))) as u32
     }
 
     fn read_long(&self, _address_space: AddressSpace, address: u32) -> u32 {
         (self.read_u8(address) << 24
-        |self.read_u8(address.wrapping_add(1)) << 16
-        |self.read_u8(address.wrapping_add(2)) <<  8
-        |self.read_u8(address.wrapping_add(3))) as u32
+            | self.read_u8(address.wrapping_add(1)) << 16
+            | self.read_u8(address.wrapping_add(2)) << 8
+            | self.read_u8(address.wrapping_add(3))) as u32
     }
 
     fn write_byte(&mut self, _address_space: AddressSpace, address: u32, value: u32) {
@@ -127,14 +133,14 @@ impl AddressBus for PagedMem {
     }
 
     fn write_word(&mut self, _address_space: AddressSpace, address: u32, value: u32) {
-        self.write_u8(address, value >>  8);
+        self.write_u8(address, value >> 8);
         self.write_u8(address.wrapping_add(1), value);
     }
 
     fn write_long(&mut self, _address_space: AddressSpace, address: u32, value: u32) {
         self.write_u8(address, value >> 24);
         self.write_u8(address.wrapping_add(1), value >> 16);
-        self.write_u8(address.wrapping_add(2), value >>  8);
+        self.write_u8(address.wrapping_add(2), value >> 8);
         self.write_u8(address.wrapping_add(3), value);
     }
 }
@@ -142,32 +148,32 @@ impl AddressBus for PagedMem {
 #[cfg(test)]
 mod tests {
     use super::{AddressBus, PagedMem, PAGE_SIZE};
-    use ram::{SUPERVISOR_DATA, SUPERVISOR_PROGRAM, USER_DATA, USER_PROGRAM, ADDRBUS_MASK};
+    use ram::{ADDRBUS_MASK, SUPERVISOR_DATA, SUPERVISOR_PROGRAM, USER_DATA, USER_PROGRAM};
 
     #[test]
     fn read_initialized_memory() {
         let mem = PagedMem::new(0x01020304);
         for v in 0..256 {
-            assert_eq!(0x01, mem.read_byte(SUPERVISOR_DATA, 4*v+0));
-            assert_eq!(0x02, mem.read_byte(SUPERVISOR_DATA, 4*v+1));
-            assert_eq!(0x03, mem.read_byte(SUPERVISOR_DATA, 4*v+2));
-            assert_eq!(0x04, mem.read_byte(SUPERVISOR_DATA, 4*v+3));
+            assert_eq!(0x01, mem.read_byte(SUPERVISOR_DATA, 4 * v + 0));
+            assert_eq!(0x02, mem.read_byte(SUPERVISOR_DATA, 4 * v + 1));
+            assert_eq!(0x03, mem.read_byte(SUPERVISOR_DATA, 4 * v + 2));
+            assert_eq!(0x04, mem.read_byte(SUPERVISOR_DATA, 4 * v + 3));
         }
         for v in 0..256 {
-            assert_eq!(0x0102, mem.read_word(SUPERVISOR_DATA, 4*v+0));
-            assert_eq!(0x0203, mem.read_word(SUPERVISOR_DATA, 4*v+1));
-            assert_eq!(0x0304, mem.read_word(SUPERVISOR_DATA, 4*v+2));
-            if 4*v+3 < 1023 {
-                assert_eq!(0x0401, mem.read_word(SUPERVISOR_DATA, 4*v+3));
+            assert_eq!(0x0102, mem.read_word(SUPERVISOR_DATA, 4 * v + 0));
+            assert_eq!(0x0203, mem.read_word(SUPERVISOR_DATA, 4 * v + 1));
+            assert_eq!(0x0304, mem.read_word(SUPERVISOR_DATA, 4 * v + 2));
+            if 4 * v + 3 < 1023 {
+                assert_eq!(0x0401, mem.read_word(SUPERVISOR_DATA, 4 * v + 3));
             }
         }
         for v in 0..255 {
-            assert_eq!(0x01020304, mem.read_long(SUPERVISOR_DATA, 4*v+0));
-            assert_eq!(0x02030401, mem.read_long(SUPERVISOR_DATA, 4*v+1));
-            assert_eq!(0x03040102, mem.read_long(SUPERVISOR_DATA, 4*v+2));
-            assert_eq!(0x04010203, mem.read_long(SUPERVISOR_DATA, 4*v+3));
+            assert_eq!(0x01020304, mem.read_long(SUPERVISOR_DATA, 4 * v + 0));
+            assert_eq!(0x02030401, mem.read_long(SUPERVISOR_DATA, 4 * v + 1));
+            assert_eq!(0x03040102, mem.read_long(SUPERVISOR_DATA, 4 * v + 2));
+            assert_eq!(0x04010203, mem.read_long(SUPERVISOR_DATA, 4 * v + 3));
         }
-        assert_eq!(0x01020304, mem.read_long(SUPERVISOR_DATA, 4*255));
+        assert_eq!(0x01020304, mem.read_long(SUPERVISOR_DATA, 4 * 255));
     }
 
     #[test]
@@ -218,8 +224,7 @@ mod tests {
     }
 
     #[test]
-    fn page_allocation_on_write()
-    {
+    fn page_allocation_on_write() {
         let mut mem = PagedMem::new(0x01020304);
         let data = 12345678;
         let address = 0xFF0000;
@@ -240,20 +245,19 @@ mod tests {
         mem.write_long(SUPERVISOR_DATA, address + PAGE_SIZE * 10, data);
         assert_eq!(2, mem.allocated_pages());
         // no additional pages allocated after reading over new page boundary
-        mem.read_long(SUPERVISOR_DATA, address + 4*PAGE_SIZE - 2);
+        mem.read_long(SUPERVISOR_DATA, address + 4 * PAGE_SIZE - 2);
         assert_eq!(2, mem.allocated_pages());
         // two additional pages allocated after writing over new page boundary
-        mem.write_long(SUPERVISOR_DATA, address + 4*PAGE_SIZE - 2, data);
+        mem.write_long(SUPERVISOR_DATA, address + 4 * PAGE_SIZE - 2, data);
         assert_eq!(4, mem.allocated_pages());
     }
 
     #[test]
-    fn page_allocation_on_write_unless_matching_initializer()
-    {
+    fn page_allocation_on_write_unless_matching_initializer() {
         let data = 0x01020304;
         let mut mem = PagedMem::new(data);
-        for offset in 0..PAGE_SIZE/4 {
-            mem.write_long(SUPERVISOR_DATA, 4*offset, data);
+        for offset in 0..PAGE_SIZE / 4 {
+            mem.write_long(SUPERVISOR_DATA, 4 * offset, data);
         }
         mem.write_byte(SUPERVISOR_DATA, 0, 0x1);
         mem.write_byte(SUPERVISOR_DATA, 1, 0x2);
@@ -274,15 +278,13 @@ mod tests {
     }
 
     #[test]
-    fn no_diff_initially()
-    {
+    fn no_diff_initially() {
         let mem = PagedMem::new(0x01020304);
         assert_eq!(None, mem.diffs().next());
     }
 
     #[test]
-    fn can_extract_diffs()
-    {
+    fn can_extract_diffs() {
         let mut mem = PagedMem::new(0x01020304);
         mem.write_byte(SUPERVISOR_DATA, PAGE_SIZE * 10, 0x91);
         mem.write_byte(SUPERVISOR_DATA, PAGE_SIZE * 20, 0x92);
@@ -293,13 +295,15 @@ mod tests {
     }
 
     #[test]
-    fn extracts_two_full_pages_of_diffs()
-    {
+    fn extracts_two_full_pages_of_diffs() {
         let mut mem = PagedMem::new(0x01020304);
         mem.write_byte(SUPERVISOR_DATA, PAGE_SIZE * 10, 0x91);
         mem.write_byte(SUPERVISOR_DATA, PAGE_SIZE * 20, 0x92);
 
-        assert_eq!(PAGE_SIZE as usize * mem.allocated_pages(), mem.diffs().count());
+        assert_eq!(
+            PAGE_SIZE as usize * mem.allocated_pages(),
+            mem.diffs().count()
+        );
     }
 
     #[test]
@@ -307,29 +311,29 @@ mod tests {
         let mut mem = PagedMem::new(0x01020304);
         mem.write_byte(SUPERVISOR_DATA, ADDRBUS_MASK, 0x91);
         assert_eq!(0x91, mem.read_byte(SUPERVISOR_DATA, ADDRBUS_MASK));
-        mem.write_byte(SUPERVISOR_DATA, ADDRBUS_MASK+1, 0x92);
+        mem.write_byte(SUPERVISOR_DATA, ADDRBUS_MASK + 1, 0x92);
         assert_eq!(0x92, mem.read_byte(SUPERVISOR_DATA, 0));
     }
 
     #[test]
     fn cross_address_bus_boundary_word_access() {
         let mut mem = PagedMem::new(0x01020304);
-        mem.write_word(SUPERVISOR_DATA, ADDRBUS_MASK+1, 0x9192);
+        mem.write_word(SUPERVISOR_DATA, ADDRBUS_MASK + 1, 0x9192);
         assert_eq!(0x9192, mem.read_word(SUPERVISOR_DATA, 0));
     }
 
     #[test]
     fn cross_address_bus_boundary_long_access() {
         let mut mem = PagedMem::new(0x01020304);
-        mem.write_long(SUPERVISOR_DATA, ADDRBUS_MASK-1, 0x91929394);
-        assert_eq!(0x91929394, mem.read_long(SUPERVISOR_DATA, ADDRBUS_MASK-1));
+        mem.write_long(SUPERVISOR_DATA, ADDRBUS_MASK - 1, 0x91929394);
+        assert_eq!(0x91929394, mem.read_long(SUPERVISOR_DATA, ADDRBUS_MASK - 1));
     }
 
     #[test]
     fn cross_type_boundary_word_access() {
         let mut mem = PagedMem::new(0x01020304);
 
-        let addr = u32::max_value()-1;
+        let addr = u32::max_value() - 1;
         mem.write_word(SUPERVISOR_DATA, addr, 0x9192);
         assert_eq!(0x9192, mem.read_word(SUPERVISOR_DATA, addr));
     }
@@ -338,7 +342,7 @@ mod tests {
     fn cross_type_boundary_long_access() {
         let mut mem = PagedMem::new(0x01020304);
 
-        let addr = u32::max_value()-1;
+        let addr = u32::max_value() - 1;
         mem.write_long(SUPERVISOR_DATA, addr, 0x91929394);
         assert_eq!(0x91929394, mem.read_long(SUPERVISOR_DATA, addr));
     }

@@ -29,11 +29,13 @@ impl fmt::Debug for AddressSpace {
 
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 enum Segment {
-    Program, Data
+    Program,
+    Data,
 }
 #[derive(Copy, Clone, Debug, Hash, Eq, PartialEq)]
 enum Mode {
-    User, Supervisor
+    User,
+    Supervisor,
 }
 
 pub const SUPERVISOR_PROGRAM: AddressSpace = AddressSpace(Mode::Supervisor, Segment::Program);
@@ -50,4 +52,3 @@ pub trait AddressBus {
     fn write_word(&mut self, address_space: AddressSpace, address: u32, value: u32);
     fn write_long(&mut self, address_space: AddressSpace, address: u32, value: u32);
 }
-

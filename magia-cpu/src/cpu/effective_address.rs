@@ -88,19 +88,23 @@ pub fn postincrement_ax_32<T: Core>(core: &mut T) -> Result<u32> {
 
 fn predecrement_8<T: Core>(core: &mut T, reg_ndx: usize) -> u32 {
     // pre-decrement
-    dar!(core)[reg_ndx] = (Wrapping(dar!(core)[reg_ndx]) - match reg_ndx {
-        15 => Wrapping(2), // A7 is kept even
-         _ => Wrapping(1)
-    }).0;
+    dar!(core)[reg_ndx] = (Wrapping(dar!(core)[reg_ndx])
+        - match reg_ndx {
+            15 => Wrapping(2), // A7 is kept even
+            _ => Wrapping(1),
+        })
+    .0;
     dar!(core)[reg_ndx]
 }
 fn postincrement_8<T: Core>(core: &mut T, reg_ndx: usize) -> u32 {
     // post-increment
     let ea = dar!(core)[reg_ndx];
-    dar!(core)[reg_ndx] = (Wrapping(dar!(core)[reg_ndx]) + match reg_ndx {
-        15 => Wrapping(2), // A7 is kept even
-         _ => Wrapping(1)
-    }).0;
+    dar!(core)[reg_ndx] = (Wrapping(dar!(core)[reg_ndx])
+        + match reg_ndx {
+            15 => Wrapping(2), // A7 is kept even
+            _ => Wrapping(1),
+        })
+    .0;
     ea
 }
 fn predecrement_16<T: Core>(core: &mut T, reg_ndx: usize) -> u32 {
@@ -135,28 +139,32 @@ const LONG_INDEX_MASK: u16 = 0x0800;
 fn index<T: Core>(core: &mut T, reg_val: u32) -> Result<u32> {
     let extension = try!(core.read_imm_u16());
     // top four bits = (D/A RRR) matches our register array layout
-    let xreg_ndx = (extension>>12) as usize;
+    let xreg_ndx = (extension >> 12) as usize;
     let xn = dar!(core)[xreg_ndx];
-    let xn = if (extension & LONG_INDEX_MASK) > 0 {xn} else {(xn as i16) as u32};
+    let xn = if (extension & LONG_INDEX_MASK) > 0 {
+        xn
+    } else {
+        (xn as i16) as u32
+    };
 
-      let index = extension as i8;
+    let index = extension as i8;
     let ea = (Wrapping(reg_val) + Wrapping(xn) + Wrapping(index as u32)).0;
     Ok(ea)
 }
 
 #[cfg(test)]
 mod tests {
+    use super::super::effective_address::{postincrement_8, predecrement_8};
     use super::super::TestCore;
-    use super::super::effective_address::{predecrement_8, postincrement_8};
 
     #[test]
     fn predecrement_wraps() {
         let mut core = TestCore::new(0x40);
         for i in 0..8 {
             // pre-decrement should wrap to 0xFFFFFFFF
-            core.dar[8+i as usize] = 0;
+            core.dar[8 + i as usize] = 0;
         }
-        let ea = predecrement_8(&mut core, 8+0);
+        let ea = predecrement_8(&mut core, 8 + 0);
         assert_eq!(0xFFFFFFFF, ea);
     }
     #[test]
@@ -164,9 +172,9 @@ mod tests {
         let mut core = TestCore::new(0x40);
         for i in 0..8 {
             // pre-decrement should wrap to 0xFFFFFFFF
-            core.dar[8+i as usize] = 0;
+            core.dar[8 + i as usize] = 0;
         }
-        let ea = predecrement_8(&mut core, 8+7);
+        let ea = predecrement_8(&mut core, 8 + 7);
         // a7 is kept even
         assert_eq!(0xFFFFFFFE, ea);
     }
@@ -175,22 +183,22 @@ mod tests {
         let mut core = TestCore::new(0x40);
         for i in 0..8 {
             // pre-decrement should wrap to 0xFFFFFFFF
-            core.dar[8+i as usize] = 0xFFFFFFFF;
+            core.dar[8 + i as usize] = 0xFFFFFFFF;
         }
-        let ea = postincrement_8(&mut core, 8+0);
+        let ea = postincrement_8(&mut core, 8 + 0);
         assert_eq!(0xFFFFFFFF, ea);
-        assert_eq!(0x0, core.dar[8+0]);
+        assert_eq!(0x0, core.dar[8 + 0]);
     }
     #[test]
     fn postincrement_8_wraps_a7_by_two() {
         let mut core = TestCore::new(0x40);
         for i in 0..8 {
             // pre-decrement should wrap to 0xFFFFFFFF
-            core.dar[8+i as usize] = 0xFFFFFFFE;
+            core.dar[8 + i as usize] = 0xFFFFFFFE;
         }
-        let ea = postincrement_8(&mut core, 8+7);
+        let ea = postincrement_8(&mut core, 8 + 7);
         // a7 is kept even
         assert_eq!(0xFFFFFFFE, ea);
-        assert_eq!(0x0, core.dar[8+7]);
+        assert_eq!(0x0, core.dar[8 + 7]);
     }
 }

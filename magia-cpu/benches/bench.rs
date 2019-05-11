@@ -1,16 +1,16 @@
 #![feature(test)]
 
-extern crate test;
 extern crate r68k_emu;
+extern crate test;
 use test::Bencher;
 
-use r68k_emu::cpu::{ConfiguredCore, Core, ProcessingState, Result, Cycles, Exception, Callbacks};
 use r68k_emu::cpu::ops::opcodes;
-use r68k_emu::ram::PagedMem;
+use r68k_emu::cpu::{Callbacks, ConfiguredCore, Core, Cycles, Exception, ProcessingState, Result};
 use r68k_emu::interrupts::AutoInterruptController;
+use r68k_emu::ram::PagedMem;
 
 struct LogAllExceptions {
-    count: isize
+    count: isize,
 }
 impl Callbacks for LogAllExceptions {
     fn exception_callback(&mut self, _: &mut impl Core, ex: Exception) -> Result<Cycles> {
@@ -22,12 +22,22 @@ impl Callbacks for LogAllExceptions {
 
 #[bench]
 fn bench_100k_cycles(b: &mut Bencher) {
-    let mut cpu = ConfiguredCore::new_with(0, AutoInterruptController::new(), PagedMem::new(0xAAAAAAAA));
-    let regregops = [opcodes::OP_ADD_16_ER_DN, opcodes::OP_SUB_16_ER_DN, opcodes::OP_AND_16_ER_DN, opcodes::OP_OR_16_ER_DN];
+    let mut cpu =
+        ConfiguredCore::new_with(0, AutoInterruptController::new(), PagedMem::new(0xAAAAAAAA));
+    let regregops = [
+        opcodes::OP_ADD_16_ER_DN,
+        opcodes::OP_SUB_16_ER_DN,
+        opcodes::OP_AND_16_ER_DN,
+        opcodes::OP_OR_16_ER_DN,
+    ];
     let pc_base = 0x1000;
     // write an instruction sequence of simple reg-to-reg operations
     for i in 0..0x10000 {
-        cpu.write_program_word(pc_base + i*2, regregops[(i % regregops.len() as u32) as usize]).unwrap();
+        cpu.write_program_word(
+            pc_base + i * 2,
+            regregops[(i % regregops.len() as u32) as usize],
+        )
+        .unwrap();
     }
     cpu.write_program_long(0, 0x100000).unwrap(); // SSP
     cpu.write_program_long(4, pc_base).unwrap(); // PC
@@ -36,7 +46,8 @@ fn bench_100k_cycles(b: &mut Bencher) {
     for exception in 2..256 {
         cpu.write_data_long(exception * 4, generic_handler).unwrap(); // set up exception vector
     }
-    cpu.write_data_word(generic_handler, opcodes::OP_RTE_32).unwrap(); // handler is just RTE
+    cpu.write_data_word(generic_handler, opcodes::OP_RTE_32)
+        .unwrap(); // handler is just RTE
     let cycles_per_instruction = 4;
     let num_instructions = 25_000;
     let bytes_per_instruction = 2;
@@ -49,5 +60,8 @@ fn bench_100k_cycles(b: &mut Bencher) {
     });
     assert_eq!(0, handler.count);
     assert_eq!(ProcessingState::Normal, cpu.processing_state);
-    assert_eq!(pc_base + (num_instructions * bytes_per_instruction) as u32, cpu.pc);
+    assert_eq!(
+        pc_base + (num_instructions * bytes_per_instruction) as u32,
+        cpu.pc
+    );
 }
