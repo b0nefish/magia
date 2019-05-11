@@ -110,6 +110,7 @@ void *myrealloc(void *old,size_t sz)
 
 void myfree(void *p)
 {
+#if 0
   if (p) {
     if (debug) {
       size_t *myp = (size_t *)p;
@@ -120,6 +121,7 @@ void myfree(void *p)
     else
       free(p);
   }
+#endif
 }
 
 

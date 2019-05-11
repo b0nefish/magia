@@ -71,7 +71,7 @@ char *escape(char *s,char *code)
     case 'e':
       *code=27;
       return s+1;
-    case '0': case '1': case '2': case '3': 
+    case '0': case '1': case '2': case '3':
     case '4': case '5': case '6': case '7':
       *code = 0;
       while (*s>='0' && *s<='7') {
@@ -91,7 +91,7 @@ char *escape(char *s,char *code)
         else
           *code = *code*16 + *s -'A' + 10;
         s++;
-      }    
+      }
       return s;
     default:
       general_error(35,*s);
@@ -645,7 +645,7 @@ int execute_macro(char *name,int name_len,char **q,int *q_len,int nq,
       src->param_len[n] = 0;
     }
   }
-    
+
   /* read macro arguments from operand field */
   s = skip(s);
   n = 0;
@@ -898,6 +898,8 @@ char *read_next_line(void)
 
   /* check if end of source is reached */
   for (;;) {
+  	printf("%p\n", cur_src);
+  	printf("%p %d\n", cur_src->text, (int)cur_src->size);
     srcend = cur_src->text + cur_src->size;
     if (cur_src->srcptr >= srcend || *(cur_src->srcptr) == '\0') {
       if (--cur_src->repeat > 0) {

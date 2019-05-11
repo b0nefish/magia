@@ -91,6 +91,7 @@ void leave(void)
 
   if(outfile){
     fclose(outfile);
+    outfile = NULL;
     if (errors)
       remove(outname);
   }
@@ -107,11 +108,15 @@ void leave(void)
     }
   }
 
+/*
   if(errors)
     exit(EXIT_FAILURE);
   else
     exit(EXIT_SUCCESS);
+*/
 }
+
+//
 
 /* Removes all unallocated (offset) sections from the list and converts
    their label symbols into absolute expressions. */
@@ -815,7 +820,30 @@ int vasm_main(int argc,char **argv)
       write_depends(stdout);
   }
   leave();
-  return 0; /* not reached */
+
+  printf("errors %d\n", errors);
+
+  if (errors != 0)
+  	return 0;
+
+  return 1;
+}
+
+#define sizeof_array(array) (int)(sizeof(array)/sizeof(array[0]))
+
+
+int vasm_compile_bin(const char* output, const char* input) {
+	char output_format[16] = "-Fbin";
+
+	const char* argv[] = {
+		"dummy",
+		input,
+		output_format,
+		"-o",
+		output
+	};
+
+	return vasm_main(sizeof_array(argv), (char**)argv);
 }
 
 static void add_depend(char *name)

@@ -69,7 +69,7 @@ struct include_path {
 };
 
 #define TBL_SRC_NAME(src) (cur_src ? ((src)->override_name ? (src)->override_name : (src)->real_name) : "unknown")
-#define TBL_SRC_LINE(src) (cur_src ? ((src)->override_name ? (src)->override_line : (src)->real_line) : "unknown")
+#define TBL_SRC_LINE(src) (cur_src ? ((src)->override_name ? (src)->override_line : (src)->real_line) : 0)
 
 /* source texts (main file, include files or macros) */
 struct source {

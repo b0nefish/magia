@@ -21,7 +21,6 @@ fn main() {
         .file("vasm_c/symbol.c")
         .file("vasm_c/symtab.c")
         .file("vasm_c/vasm.c")
-        .file("vasm_c/vasm.h")
         .file("vasm_c/cpus/m68k/cpu.c")
         .file("vasm_c/syntax/mot/syntax.c")
         .warnings(false)
@@ -35,6 +34,6 @@ fn main() {
         .include("vasm_c")
         .include("vasm_c/cpus/m68k")
         .include("vasm_c/syntax/mot")
-        .compile("vasm");
+        .compile("vasm_tool");
 }
 
