@@ -1,24 +1,9 @@
 use std::io::Result;
 
-#[macro_use]
-extern crate lazy_static;
-
-use gag;
-
-use gag::{BufferRedirect, Hold};
-use std::io::{Read, Write, Error, ErrorKind};
-use std::sync::Mutex;
-use std::env;
-use std::ffi::CString;
-use std::fs;
-
-lazy_static! {
-    static ref STDERR_MUTEX: Mutex<()> = Mutex::new(());
-}
-
-extern {
-    fn vasm_compile_bin(output: *const i8, input: *const i8) -> i32;
-}
+use std::process::Command;
+use tempfile::NamedTempFile;
+use std::io::{Error, ErrorKind};
+use std::{fs, str};
 
 ///
 /// Compile m68k assembly and output a binary blob of the code
@@ -28,35 +13,45 @@ extern {
 /// this will gives us a starting point at least
 ///
 pub fn compile_bin(code: &str, name: &str) -> Result<Vec<u8>> {
-    let _l = STDERR_MUTEX.lock().unwrap();
-    let mut buf = BufferRedirect::stderr().unwrap();
+    let output_name = NamedTempFile::new()?;
+    let input_name = NamedTempFile::new()?;
 
-    let mut vasm_input_filename = env::temp_dir();
-    let mut vasm_output_filename = env::temp_dir();
+    let output_path = output_name.into_temp_path();
+    let input_path = input_name.into_temp_path();
 
-    vasm_input_filename.push("vasm_temp.s");
-    vasm_output_filename.push("vasm_output.bin");
-
-    //let t: i32 = vasm_input_filename;
-
-    //let vasm_input_filename = temp_dir.push("vasm_temp.s");
-    //let vasm_output_filename = temp_dir.push("vasm_output.bin");
-
-    //let t: i32 = vasm_input_filename;
-
-    fs::write(vasm_input_filename.as_path(), code)?;
-
-    let ffi_input_filename = CString::new(vasm_input_filename.as_os_str().to_str().unwrap()).unwrap();
-    let ffi_output_filename = CString::new(vasm_output_filename.as_os_str().to_str().unwrap()).unwrap();
-
-    // Call the vasm C code and check that error code is valid, load the binary file and return
-    // that if not return error with the contents of the stderror output
-    if unsafe { vasm_compile_bin(ffi_output_filename.as_ptr(), ffi_input_filename.as_ptr()) } == 0 {
-        let mut output = String::new();
-        buf.read_to_string(&mut output)?;
-        Err(Error::new(ErrorKind::Other, output))
+    // TODO: Maybe we need to search backwards so we can be higher up in the directory structure
+    // and still be able to call vasm. Remains to be seen but leaving it as is for now.
+    let mut command = if cfg!(target_os = "linux") {
+        Command::new("../bin/linux/vasm")
+    } else if cfg!(target_os = "windows") {
+        Command::new("..\\bin\\windows\\vasm.exe")
     } else {
-        Ok(std::fs::read(vasm_output_filename.as_path())?)
+        Command::new("../bin/mac/vasm")
+    };
+
+    // write the temp assembly code to a tempory file
+    fs::write(&input_path, code)?;
+
+    let vasm_output = command.arg(&input_path)
+        .arg("-quiet")
+        .arg("-Fbin")
+        .arg("-o")
+        .arg(&output_path)
+        .output()?;
+
+    // can close the input file at this point now
+    input_path.close()?;
+
+    // If vasm status was ok we read the generated file back, close the temp file and return
+    if vasm_output.status.success() {
+        let return_data = std::fs::read(&output_path)?;
+        output_path.close()?;
+        Ok(return_data)
+    } else {
+        output_path.close()?;
+        // expect this to be correct as vasm only prints ascii
+        let error_message = str::from_utf8(&vasm_output.stderr).unwrap();
+        Err(Error::new(ErrorKind::Other, format!("{} error: {}", name, error_message)))
     }
 }
 
@@ -66,18 +61,19 @@ mod tests {
 
     #[test]
     fn compile_basic_code() {
-        let res = compile_bin(
-            "nop
-             nop",
-             "nop_code");
-        res.unwrap();
-        //assert_eq!(true, res.is_ok());
+        let res = compile_bin(" nop", "nop_code");
+        assert_eq!(true, res.is_ok());
+        let data = res.unwrap();
+
+        // verify that we got a nop instruction back
+        assert_eq!(2, data.len());
+        assert_eq!(0x4e, data[0]);
+        assert_eq!(0x71, data[1]);
     }
 
     #[test]
     fn compile_basic_code_fail() {
-        let res = compile_bin("np\n", "nop_error");
-        res.unwrap();
-        //assert_eq!(true, res.is_err());
+        let res = compile_bin(" np", "nop_error");
+        assert_eq!(true, res.is_err());
     }
 }

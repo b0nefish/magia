@@ -3,11 +3,6 @@ name = "vasm"
 version = "0.1.0"
 authors = ["Daniel Collin <daniel@collin.com>"]
 edition = "2018"
-build = "build.rs"
 
 [dependencies]
-lazy_static = "1"
-gag = "0.1"
-
-[build-dependencies]
-cc = { version = "1.0" }
+tempfile = "3"
