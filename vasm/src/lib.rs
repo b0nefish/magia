@@ -1,9 +1,9 @@
 use std::io::Result;
 
-use std::process::Command;
-use tempfile::NamedTempFile;
 use std::io::{Error, ErrorKind};
+use std::process::Command;
 use std::{fs, str};
+use tempfile::NamedTempFile;
 
 ///
 /// Compile m68k assembly and output a binary blob of the code
@@ -32,7 +32,8 @@ pub fn compile_bin(code: &str, name: &str) -> Result<Vec<u8>> {
     // write the temp assembly code to a tempory file
     fs::write(&input_path, code)?;
 
-    let vasm_output = command.arg(&input_path)
+    let vasm_output = command
+        .arg(&input_path)
         .arg("-quiet")
         .arg("-Fbin")
         .arg("-o")
@@ -51,7 +52,10 @@ pub fn compile_bin(code: &str, name: &str) -> Result<Vec<u8>> {
         output_path.close()?;
         // expect this to be correct as vasm only prints ascii
         let error_message = str::from_utf8(&vasm_output.stderr).unwrap();
-        Err(Error::new(ErrorKind::Other, format!("{} error: {}", name, error_message)))
+        Err(Error::new(
+            ErrorKind::Other,
+            format!("{} error: {}", name, error_message),
+        ))
     }
 }
 
