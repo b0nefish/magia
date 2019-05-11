@@ -2,8 +2,7 @@
 name = "magia-cpu"
 version = "0.1.0"
 authors = ["Martin Hellspong <martin.hellspong@factor10.com>"]
-build = "build.rs"
 
 [dependencies]
 lazy_static = "0.1.*"
-clippy = {version = "*", optional = true}
+clippy =  { version = "*", optional = true }
