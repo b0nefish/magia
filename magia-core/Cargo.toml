@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 magia-cpu = { path = "../magia-cpu" }
+magia-disassembler = { path = "../magia-disassembler" }
