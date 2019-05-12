@@ -1169,9 +1169,10 @@ impl Clone for TestCore {
 
 #[cfg(test)]
 mod tests {
+    use vasm;
     use super::ops; //::instruction_set;
     use super::{Cycles, TestCore};
-    
+
     use cpu::ops::opcodes;
     use ram::loggingmem::Operation;
     use ram::{AddressBus, SUPERVISOR_PROGRAM, USER_DATA, USER_PROGRAM};
@@ -1386,6 +1387,18 @@ mod tests {
 
         // 16 + 26 is 42
         assert_eq!(42, cpu.dar[1]);
+    }
+
+    #[test]
+    fn moveq_vasm() {
+        let code = vasm::compile_bin("test_moveq",
+            " moveq #100,d0",
+            ).unwrap();
+
+        let mut cpu = TestCore::new_mem(0x40, &code);
+        cpu.execute1();
+
+        assert_eq!(100, cpu.dar[0]);
     }
 
     #[test]

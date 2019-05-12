@@ -1,3 +1,6 @@
+#[cfg(test)]
+extern crate vasm;
+
 #[macro_use]
 mod constants;
 pub mod cpu;

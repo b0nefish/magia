@@ -10,7 +10,7 @@ use tempfile::NamedTempFile;
 /// generated file from the vasm code. It would be much nicer to keep this all in memory but
 /// this will gives us a starting point at least
 ///
-pub fn compile_bin(code: &str, name: &str) -> Result<Vec<u8>> {
+pub fn compile_bin(name: &str, code: &str) -> Result<Vec<u8>> {
     let output_name = NamedTempFile::new()?;
     let input_name = NamedTempFile::new()?;
 
@@ -63,7 +63,7 @@ mod tests {
 
     #[test]
     fn compile_basic_code() {
-        let res = compile_bin(" nop", "nop_code");
+        let res = compile_bin("nop_code", " nop");
         assert_eq!(true, res.is_ok());
         let data = res.unwrap();
 
@@ -75,7 +75,7 @@ mod tests {
 
     #[test]
     fn compile_basic_code_fail() {
-        let res = compile_bin(" np", "nop_error");
+        let res = compile_bin("nop_error", " np");
         assert_eq!(true, res.is_err());
     }
 }
