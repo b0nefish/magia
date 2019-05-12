@@ -1171,7 +1171,7 @@ impl Clone for TestCore {
 mod tests {
     use super::ops; //::instruction_set;
     use super::{Cycles, TestCore};
-    use constants;
+    
     use cpu::ops::opcodes;
     use ram::loggingmem::Operation;
     use ram::{AddressBus, SUPERVISOR_PROGRAM, USER_DATA, USER_PROGRAM};
