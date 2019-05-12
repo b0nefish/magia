@@ -1,15 +1,22 @@
 //! An instruction decoder for M680x0 family instructions.
 
-mod decoder;
 mod codestream;
+mod decoder;
 
 pub use decoder::Operation;
 
 /// One of the 8 data registers.
 #[derive(Debug, PartialEq, Clone)]
 #[repr(u8)]
-pub enum DataRegister { 
-    D0, D1, D2, D3, D4, D5, D6, D7,
+pub enum DataRegister {
+    D0,
+    D1,
+    D2,
+    D3,
+    D4,
+    D5,
+    D6,
+    D7,
 }
 
 /// One of the 8 address registers.
@@ -17,15 +24,29 @@ pub enum DataRegister {
 /// Note that A7 means `USP` in user mode and `SSP`/`ISP` in supervisor mode.
 #[derive(Debug, PartialEq, Clone)]
 #[repr(u8)]
-pub enum AddressRegister { 
-    A0, A1, A2, A3, A4, A5, A6, A7,
+pub enum AddressRegister {
+    A0,
+    A1,
+    A2,
+    A3,
+    A4,
+    A5,
+    A6,
+    A7,
 }
 
 /// One of the 8 floating point registers.
 #[derive(Debug, PartialEq, Clone)]
 #[repr(u8)]
-pub enum FloatingRegister { 
-    FP0, FP1, FP2, FP3, FP4, FP5, FP6, FP7,
+pub enum FloatingRegister {
+    FP0,
+    FP1,
+    FP2,
+    FP3,
+    FP4,
+    FP5,
+    FP6,
+    FP7,
 }
 
 /// Indicates how memory indexing is to be performed for 68020+ double memory operands.
@@ -62,7 +83,7 @@ pub struct Displacement {
     /// Indicates how indexing is to be performed.
     pub indexer: Indexer,
     /// Indicates what type of memory indirection is to be performed.
-    pub indirection: MemoryIndirection
+    pub indirection: MemoryIndirection,
 }
 
 /// Describes one of the two operands in an instruction
@@ -127,7 +148,7 @@ pub enum BitfieldData {
     /// The offset or width is static.
     STATIC(u8),
     /// The offset or width is dynamic and specified via a data register.
-    DYNAMIC(DataRegister)
+    DYNAMIC(DataRegister),
 }
 
 /// A CPU condition code from the CCR
@@ -135,9 +156,9 @@ pub enum BitfieldData {
 #[allow(non_camel_case_types)]
 pub enum ConditionCode {
     /// Always True        
-    CC_T  = 0b0000,
+    CC_T = 0b0000,
     /// Always False       
-    CC_F  = 0b0001,
+    CC_F = 0b0001,
     /// High               
     CC_HI = 0b0010,
     /// Low or Same        
@@ -173,69 +194,69 @@ pub enum ConditionCode {
 #[allow(non_camel_case_types)]
 pub enum FPConditionCode {
     /// False
-    FPCC_F    = 0b000000,
+    FPCC_F = 0b000000,
     /// Equal
-    FPCC_EQ   = 0b000001,
+    FPCC_EQ = 0b000001,
     /// Ordered Greater Than
-    FPCC_OGT  = 0b000010,
+    FPCC_OGT = 0b000010,
     /// Ordered Greater Than or Equal
-    FPCC_OGE  = 0b000011,
+    FPCC_OGE = 0b000011,
     /// Ordered Less Than
-    FPCC_OLT  = 0b000100,
+    FPCC_OLT = 0b000100,
     /// Ordered Less Than or Equal
-    FPCC_OLE  = 0b000101,
+    FPCC_OLE = 0b000101,
     /// Ordered Greater Than or Less Than
-    FPCC_OGL  = 0b000110,
+    FPCC_OGL = 0b000110,
     /// Ordered
-    FPCC_OR   = 0b000111,
+    FPCC_OR = 0b000111,
     /// Unordered
-    FPCC_UN   = 0b001000,
+    FPCC_UN = 0b001000,
     /// Unordered or Equal
-    FPCC_UEQ  = 0b001001,
+    FPCC_UEQ = 0b001001,
     /// Unordered or Greater Than
-    FPCC_UGT  = 0b001010,
+    FPCC_UGT = 0b001010,
     /// Unordered or Greater Than or Equal
-    FPCC_UGE  = 0b001011,
+    FPCC_UGE = 0b001011,
     /// Unordered or Less Than
-    FPCC_ULT  = 0b001100,
+    FPCC_ULT = 0b001100,
     /// Unordered or Less Than or Equal
-    FPCC_ULE  = 0b001101,
+    FPCC_ULE = 0b001101,
     /// Not Equal
-    FPCC_NE   = 0b001110,
+    FPCC_NE = 0b001110,
     /// True
-    FPCC_T    = 0b001111,
+    FPCC_T = 0b001111,
     /// Signaling False
-    FPCC_SF   = 0b010000,
+    FPCC_SF = 0b010000,
     /// Signaling Equal
-    FPCC_SEQ  = 0b010001,
+    FPCC_SEQ = 0b010001,
     /// Greater Than
-    FPCC_GT   = 0b010010,
+    FPCC_GT = 0b010010,
     /// Greater Than or Equal
-    FPCC_GE   = 0b010011,
+    FPCC_GE = 0b010011,
     /// Less Than
-    FPCC_LT   = 0b010100,
+    FPCC_LT = 0b010100,
     /// Less Than or Equal
-    FPCC_LE   = 0b010101,
+    FPCC_LE = 0b010101,
     /// Greater Than or Less Than
-    FPCC_GL   = 0b010110,
+    FPCC_GL = 0b010110,
     /// Greater Than or Less Than or Equal
-    FPCC_GLE  = 0b010111,
+    FPCC_GLE = 0b010111,
     /// Not (Greater Than or Less Than or Equal)
     FPCC_NGLE = 0b011000,
     /// Not (Greater Than or Less Than)
-    FPCC_NGL  = 0b011001,
+    FPCC_NGL = 0b011001,
     /// Not (Less Than or Equal)
-    FPCC_NLE  = 0b011010,
+    FPCC_NLE = 0b011010,
     /// Not (Less Than)
-    FPCC_NLT  = 0b011011,
+    FPCC_NLT = 0b011011,
     /// Not (Greater Than or Equal)
-    FPCC_NGE  = 0b011100,
+    FPCC_NGE = 0b011100,
     /// Not (Greater Than)
-    FPCC_NGT  = 0b011101,
+    FPCC_NGT = 0b011101,
     /// Signaling Not Equal
-    FPCC_SNE  = 0b011110,
+    FPCC_SNE = 0b011110,
     /// Signaling True
-    FPCC_ST   = 0b011111,
+    FPCC_ST = 0b011111,
 }
 
 /// Indicates the floating point format in memory for a FPU operation
@@ -259,7 +280,7 @@ pub enum FPFormat {
     /// The memory operand is a IEEE 64-bit double.
     FPF_DOUBLE,
     /// The memory operand is an 8-bit integer.
-    FPF_BYTE_INT
+    FPF_BYTE_INT,
 }
 
 /// Additional attributes for an instruction that don't fit anywhere else.
@@ -289,7 +310,7 @@ pub struct Instruction {
     /// The instruction itself.
     pub operation: Operation,
     /// The two operands involved, source and destination.
-    pub operands: [Operand;2],
+    pub operands: [Operand; 2],
     /// Any additional data required to make sense of the operation.
     pub extra: InstructionExtra,
 }
@@ -304,7 +325,7 @@ pub struct DecodedInstruction {
 }
 
 /// Enumerates errors that can happen while decoding instructions.
-#[derive(Debug,PartialEq,Copy,Clone)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum DecodingError {
     /// The instruction is not implemented in the decoder.
     NotImplemented,

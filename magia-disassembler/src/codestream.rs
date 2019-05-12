@@ -1,15 +1,15 @@
-use crate::*;
-use crate::DecodingError::*;
 use crate::AddressRegister::*;
-use crate::DataRegister::*;
-use crate::FloatingRegister::*;
-use crate::MemoryIndirection::*;
-use crate::FPConditionCode::*;
-use crate::ConditionCode::*;
-use crate::FPFormat::*;
-use crate::Operand::*;
-use crate::InstructionExtra::*;
 use crate::BitfieldData::*;
+use crate::ConditionCode::*;
+use crate::DataRegister::*;
+use crate::DecodingError::*;
+use crate::FPConditionCode::*;
+use crate::FPFormat::*;
+use crate::FloatingRegister::*;
+use crate::InstructionExtra::*;
+use crate::MemoryIndirection::*;
+use crate::Operand::*;
+use crate::*;
 
 pub fn get_bits(word: u16, first: i32, length: i32) -> u16 {
     let s = word >> first;
@@ -24,7 +24,6 @@ pub struct CodeStream<'a> {
 }
 
 impl<'a> CodeStream<'a> {
-
     pub fn new(b: &'a [u8]) -> CodeStream<'a> {
         CodeStream {
             bytes: b,
@@ -35,7 +34,10 @@ impl<'a> CodeStream<'a> {
 
     pub fn check_overflow(&self, i: Instruction) -> Result<DecodedInstruction, DecodingError> {
         match self.error {
-            None => Ok(DecodedInstruction { bytes_used: self.pos as u32, instruction: i }),
+            None => Ok(DecodedInstruction {
+                bytes_used: self.pos as u32,
+                instruction: i,
+            }),
             Some(e) => Err(e),
         }
     }
@@ -140,28 +142,40 @@ impl<'a> CodeStream<'a> {
             0b010 => ARIND(self.address_reg(src_reg)),
             0b011 => ARINC(self.address_reg(src_reg)),
             0b100 => ARDEC(self.address_reg(src_reg)),
-            0b101 => ARDISP(self.address_reg(src_reg), simple_disp(self.pull16() as i16 as i32)),
+            0b101 => ARDISP(
+                self.address_reg(src_reg),
+                simple_disp(self.pull16() as i16 as i32),
+            ),
             0b110 => {
                 let r = Some(self.address_reg(src_reg));
                 self.decode_extended_ea(r)
-            },
+            }
             0b111 => match src_reg {
                 0b000 => ABS16(self.pull16() as i16),
                 0b001 => ABS32(self.pull32()),
                 0b010 => {
                     let pc_offset = self.pos as u8;
                     PCDISP(pc_offset, simple_disp(self.pull16() as i16 as i32))
-                },
+                }
                 0b011 => self.decode_extended_ea(None),
                 0b100 => match size {
                     1 => IMM8(self.pull16() as u8),
                     2 => IMM16(self.pull16()),
                     4 => IMM32(self.pull32()),
-                    _ => { self.error = Some(BadSize); NoOperand },
+                    _ => {
+                        self.error = Some(BadSize);
+                        NoOperand
+                    }
                 },
-                _ => { self.error = Some(NotImplemented); NoOperand },
+                _ => {
+                    self.error = Some(NotImplemented);
+                    NoOperand
+                }
             },
-            _ => { self.error = Some(NotImplemented); NoOperand },
+            _ => {
+                self.error = Some(NotImplemented);
+                NoOperand
+            }
         }
     }
 
@@ -178,55 +192,71 @@ impl<'a> CodeStream<'a> {
             let bd = get_bits(ext, 4, 2);
             let od = get_bits(ext, 0, 2);
             let disp = match bd {
-                0 => { self.error = Some(Reserved); 0 },
+                0 => {
+                    self.error = Some(Reserved);
+                    0
+                }
                 1 => 0u32,
                 2 => self.pull16() as i16 as i32 as u32,
                 3 => self.pull32(),
-                _ => { self.error = Some(NotImplemented); 0 },
+                _ => {
+                    self.error = Some(NotImplemented);
+                    0
+                }
             };
             let odisp = match od {
                 0 => 0u32,
                 1 => 0u32,
                 2 => self.pull16() as i16 as i32 as u32,
                 3 => self.pull32(),
-                _ => { self.error = Some(NotImplemented); 0 },
+                _ => {
+                    self.error = Some(NotImplemented);
+                    0
+                }
             };
 
             let suppress_base = get_bits(ext, 7, 1) == 1;
             let suppress_indexer = get_bits(ext, 6, 1) == 1;
 
             let indirection_mode = match suppress_indexer {
-                false => {
-                    match get_bits(ext, 0, 3) {
-                        0b000 => NoIndirection,
-                        0b001 => IndirectPreIndexed,
-                        0b010 => IndirectPreIndexed,
-                        0b011 => IndirectPreIndexed,
-                        0b100 => { self.error = Some(Reserved); NoIndirection },
-                        0b101 => IndirectPostIndexed,
-                        0b110 => IndirectPostIndexed,
-                        0b111 => IndirectPostIndexed,
-                        _ => { self.error = Some(NotImplemented); NoIndirection },
+                false => match get_bits(ext, 0, 3) {
+                    0b000 => NoIndirection,
+                    0b001 => IndirectPreIndexed,
+                    0b010 => IndirectPreIndexed,
+                    0b011 => IndirectPreIndexed,
+                    0b100 => {
+                        self.error = Some(Reserved);
+                        NoIndirection
+                    }
+                    0b101 => IndirectPostIndexed,
+                    0b110 => IndirectPostIndexed,
+                    0b111 => IndirectPostIndexed,
+                    _ => {
+                        self.error = Some(NotImplemented);
+                        NoIndirection
                     }
                 },
-                true => {
-                    match get_bits(ext, 0, 3) {
-                        0b000 => NoIndirection,
-                        0b001 => Indirect,
-                        0b010 => Indirect,
-                        0b011 => Indirect,
-                        _ => { self.error = Some(Reserved); NoIndirection },
+                true => match get_bits(ext, 0, 3) {
+                    0b000 => NoIndirection,
+                    0b001 => Indirect,
+                    0b010 => Indirect,
+                    0b011 => Indirect,
+                    _ => {
+                        self.error = Some(Reserved);
+                        NoIndirection
                     }
                 },
             };
 
             let indexer = match suppress_indexer {
                 true => Indexer::NoIndexer,
-                false => if idx_is_a {
-                    Indexer::AR(self.address_reg(idx), scale)
-                } else {
-                    Indexer::DR(self.data_reg(idx), scale)
-                },
+                false => {
+                    if idx_is_a {
+                        Indexer::AR(self.address_reg(idx), scale)
+                    } else {
+                        Indexer::DR(self.data_reg(idx), scale)
+                    }
+                }
             };
 
             if suppress_base {
@@ -238,30 +268,36 @@ impl<'a> CodeStream<'a> {
                 })
             } else {
                 match src_reg {
-                    None => PCDISP(pc_off, Displacement {
-                        base_displacement: disp as i32,
-                        outer_displacement: odisp as i32,
-                        indexer: indexer,
-                        indirection: indirection_mode,
-                    }),
-                    Some(reg) => ARDISP(reg, Displacement {
-                        base_displacement: disp as i32,
-                        outer_displacement: odisp as i32,
-                        indexer: indexer,
-                        indirection: indirection_mode,
-                    }),
+                    None => PCDISP(
+                        pc_off,
+                        Displacement {
+                            base_displacement: disp as i32,
+                            outer_displacement: odisp as i32,
+                            indexer: indexer,
+                            indirection: indirection_mode,
+                        },
+                    ),
+                    Some(reg) => ARDISP(
+                        reg,
+                        Displacement {
+                            base_displacement: disp as i32,
+                            outer_displacement: odisp as i32,
+                            indexer: indexer,
+                            indirection: indirection_mode,
+                        },
+                    ),
                 }
             }
         } else {
             // Handle brief extension word
             let disp = ((ext & 0xff) as i8) as i32;
-            let indexer =  if idx_is_a {
+            let indexer = if idx_is_a {
                 Indexer::AR(self.address_reg(idx), scale)
             } else {
                 Indexer::DR(self.data_reg(idx), scale)
             };
 
-            let displacement = Displacement { 
+            let displacement = Displacement {
                 base_displacement: disp,
                 outer_displacement: 0,
                 indexer: indexer,
@@ -290,17 +326,27 @@ impl<'a> CodeStream<'a> {
     pub fn dar(&mut self, d_or_a: u16, regno: u16) -> Operand {
         match d_or_a {
             0 => DR(self.data_reg(regno)),
-            _ => AR(self.address_reg(regno))
+            _ => AR(self.address_reg(regno)),
         }
     }
 
-    pub fn bitfield(&mut self, dyn_off: u16, off: u16, dyn_width: u16, width: u16) -> InstructionExtra {
+    pub fn bitfield(
+        &mut self,
+        dyn_off: u16,
+        off: u16,
+        dyn_width: u16,
+        width: u16,
+    ) -> InstructionExtra {
         let bf_offset = match dyn_off {
             0 => STATIC(if off & 31 == 0 { 32 } else { (off & 31) as u8 }),
             _ => DYNAMIC(self.data_reg(off)),
         };
         let bf_width = match dyn_width {
-            0 => STATIC(if width & 31 == 0 { 32 } else { (width & 31) as u8 }),
+            0 => STATIC(if width & 31 == 0 {
+                32
+            } else {
+                (width & 31) as u8
+            }),
             _ => DYNAMIC(self.data_reg(width)),
         };
         Bitfield(bf_offset, bf_width)
@@ -308,22 +354,22 @@ impl<'a> CodeStream<'a> {
 
     pub fn cc(&self, c: u16) -> InstructionExtra {
         Condition(match c {
-            0b0000 => CC_T  ,         // Always True
-            0b0001 => CC_F  ,         // Always False
-            0b0010 => CC_HI ,         // High
-            0b0011 => CC_LS ,         // Low or Same
-            0b0100 => CC_CC ,         // Carry Clear
-            0b0101 => CC_CS ,         // Carry Set
-            0b0110 => CC_NE ,         // Not Equal
-            0b0111 => CC_EQ ,         // Equal
-            0b1000 => CC_VC ,         // Overflow Clear
-            0b1001 => CC_VS ,         // Overflow Set
-            0b1010 => CC_PL ,         // Plus
-            0b1011 => CC_MI ,         // Negative
-            0b1100 => CC_GE ,         // Greater or Equal
-            0b1101 => CC_LT ,         // Less
-            0b1110 => CC_GT ,         // Greater
-            _      => CC_LE ,         // Less or Equal
+            0b0000 => CC_T,  // Always True
+            0b0001 => CC_F,  // Always False
+            0b0010 => CC_HI, // High
+            0b0011 => CC_LS, // Low or Same
+            0b0100 => CC_CC, // Carry Clear
+            0b0101 => CC_CS, // Carry Set
+            0b0110 => CC_NE, // Not Equal
+            0b0111 => CC_EQ, // Equal
+            0b1000 => CC_VC, // Overflow Clear
+            0b1001 => CC_VS, // Overflow Set
+            0b1010 => CC_PL, // Plus
+            0b1011 => CC_MI, // Negative
+            0b1100 => CC_GE, // Greater or Equal
+            0b1101 => CC_LT, // Less
+            0b1110 => CC_GT, // Greater
+            _ => CC_LE,      // Less or Equal
         })
     }
 
@@ -331,66 +377,95 @@ impl<'a> CodeStream<'a> {
         IMM8(if i == 0 { 8 } else { i as u8 })
     }
 
-    pub fn decode_fp(&mut self, rg: u16, md: u16, m_r: u16, s: u16, d: u16, k: u16) -> (i32, Operand, Operand, InstructionExtra) {
+    pub fn decode_fp(
+        &mut self,
+        rg: u16,
+        md: u16,
+        m_r: u16,
+        s: u16,
+        d: u16,
+        k: u16,
+    ) -> (i32, Operand, Operand, InstructionExtra) {
         if m_r == 1 {
             let (sz, fpform) = match s {
                 0b000 => (4, FPF_LONG_INT),
                 0b001 => (4, FPF_SINGLE),
                 0b010 => (10, FPF_EXTENDED_REAL),
-                0b011 => (12, FPF_PACKED_DECIMAL_REAL_STATIC((((k << 1) as i8) >> 1) as i32)),
+                0b011 => (
+                    12,
+                    FPF_PACKED_DECIMAL_REAL_STATIC((((k << 1) as i8) >> 1) as i32),
+                ),
                 0b100 => (2, FPF_WORD_INT),
                 0b101 => (8, FPF_DOUBLE),
                 0b110 => (1, FPF_BYTE_INT),
                 0b111 => (12, FPF_PACKED_DECIMAL_REAL_DYNAMIC(self.data_reg(k >> 4))),
-                _     => { self.error = Some(Reserved); (0, FPF_BYTE_INT) },
+                _ => {
+                    self.error = Some(Reserved);
+                    (0, FPF_BYTE_INT)
+                }
             };
 
-            (sz, self.ea(rg, md, sz), FR(self.float_reg(d)), FloatFormat(fpform))
-        }
-        else {
-            (10, FR(self.float_reg(s)), FR(self.float_reg(d)), FloatFormat(FPF_EXTENDED_REAL))
+            (
+                sz,
+                self.ea(rg, md, sz),
+                FR(self.float_reg(d)),
+                FloatFormat(fpform),
+            )
+        } else {
+            (
+                10,
+                FR(self.float_reg(s)),
+                FR(self.float_reg(d)),
+                FloatFormat(FPF_EXTENDED_REAL),
+            )
         }
     }
 
     pub fn fpcc(&self, c: u16) -> InstructionExtra {
         FPCondition(match c {
-            0b000000 => FPCC_F     , // False
-            0b000001 => FPCC_EQ    , // Equal
-            0b000010 => FPCC_OGT   , // Ordered Greater Than
-            0b000011 => FPCC_OGE   , // Ordered Greater Than or Equal
-            0b000100 => FPCC_OLT   , // Ordered Less Than
-            0b000101 => FPCC_OLE   , // Ordered Less Than or Equal
-            0b000110 => FPCC_OGL   , // Ordered Greater Than or Less Than
-            0b000111 => FPCC_OR    , // Ordered
-            0b001000 => FPCC_UN    , // Unordered
-            0b001001 => FPCC_UEQ   , // Unordered or Equal
-            0b001010 => FPCC_UGT   , // Unordered or Greater Than
-            0b001011 => FPCC_UGE   , // Unordered or Greater Than or Equal
-            0b001100 => FPCC_ULT   , // Unordered or Less Than
-            0b001101 => FPCC_ULE   , // Unordered or Less Than or Equal
-            0b001110 => FPCC_NE    , // Not Equal
-            0b001111 => FPCC_T     , // True
-            0b010000 => FPCC_SF    , // Signaling False
-            0b010001 => FPCC_SEQ   , // Signaling Equal
-            0b010010 => FPCC_GT    , // Greater Than
-            0b010011 => FPCC_GE    , // Greater Than or Equal
-            0b010100 => FPCC_LT    , // Less Than
-            0b010101 => FPCC_LE    , // Less Than or Equal
-            0b010110 => FPCC_GL    , // Greater Than or Less Than
-            0b010111 => FPCC_GLE   , // Greater Than or Less Than or Equal
-            0b011000 => FPCC_NGLE  , // Not (Greater Than or Less Than or Equal)
-            0b011001 => FPCC_NGL   , // Not (Greater Than or Less Than)
-            0b011010 => FPCC_NLE   , // Not (Less Than or Equal)
-            0b011011 => FPCC_NLT   , // Not (Less Than)
-            0b011100 => FPCC_NGE   , // Not (Greater Than or Equal)
-            0b011101 => FPCC_NGT   , // Not (Greater Than)
-            0b011110 => FPCC_SNE   , // Signaling Not Equal
-            _        => FPCC_ST    , // Signaling True
+            0b000000 => FPCC_F,    // False
+            0b000001 => FPCC_EQ,   // Equal
+            0b000010 => FPCC_OGT,  // Ordered Greater Than
+            0b000011 => FPCC_OGE,  // Ordered Greater Than or Equal
+            0b000100 => FPCC_OLT,  // Ordered Less Than
+            0b000101 => FPCC_OLE,  // Ordered Less Than or Equal
+            0b000110 => FPCC_OGL,  // Ordered Greater Than or Less Than
+            0b000111 => FPCC_OR,   // Ordered
+            0b001000 => FPCC_UN,   // Unordered
+            0b001001 => FPCC_UEQ,  // Unordered or Equal
+            0b001010 => FPCC_UGT,  // Unordered or Greater Than
+            0b001011 => FPCC_UGE,  // Unordered or Greater Than or Equal
+            0b001100 => FPCC_ULT,  // Unordered or Less Than
+            0b001101 => FPCC_ULE,  // Unordered or Less Than or Equal
+            0b001110 => FPCC_NE,   // Not Equal
+            0b001111 => FPCC_T,    // True
+            0b010000 => FPCC_SF,   // Signaling False
+            0b010001 => FPCC_SEQ,  // Signaling Equal
+            0b010010 => FPCC_GT,   // Greater Than
+            0b010011 => FPCC_GE,   // Greater Than or Equal
+            0b010100 => FPCC_LT,   // Less Than
+            0b010101 => FPCC_LE,   // Less Than or Equal
+            0b010110 => FPCC_GL,   // Greater Than or Less Than
+            0b010111 => FPCC_GLE,  // Greater Than or Less Than or Equal
+            0b011000 => FPCC_NGLE, // Not (Greater Than or Less Than or Equal)
+            0b011001 => FPCC_NGL,  // Not (Greater Than or Less Than)
+            0b011010 => FPCC_NLE,  // Not (Less Than or Equal)
+            0b011011 => FPCC_NLT,  // Not (Less Than)
+            0b011100 => FPCC_NGE,  // Not (Greater Than or Equal)
+            0b011101 => FPCC_NGT,  // Not (Greater Than)
+            0b011110 => FPCC_SNE,  // Signaling Not Equal
+            _ => FPCC_ST,          // Signaling True
         })
     }
 
-    pub fn decode_fp_movem(&mut self, r: u16, m: u16, direction: u16, mask: u16, mode: u16) -> (i32, Operand, Operand, InstructionExtra) {
-
+    pub fn decode_fp_movem(
+        &mut self,
+        r: u16,
+        m: u16,
+        direction: u16,
+        mask: u16,
+        mode: u16,
+    ) -> (i32, Operand, Operand, InstructionExtra) {
         let ea = self.ea(r, m, 10);
 
         let regs = match mode & 1 {
@@ -404,4 +479,3 @@ impl<'a> CodeStream<'a> {
         }
     }
 }
-
