@@ -1,6 +1,4 @@
-use std::io::Result;
-
-use std::io::{Error, ErrorKind};
+use std::io::{Error, ErrorKind, Result};
 use std::process::Command;
 use std::{fs, str};
 use tempfile::NamedTempFile;
