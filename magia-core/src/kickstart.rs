@@ -1,5 +1,5 @@
-use std::io::Result;
 use std::fs;
+use std::io::Result;
 
 ///
 /// Holds the data for the kickstart
@@ -8,7 +8,7 @@ pub struct Kickstart {
     /// Data for the kickstart loaded into memory
     pub data: Box<[u8]>,
     /// Kickstart version
-    _version: u32
+    _version: u32,
 }
 
 impl Kickstart {
