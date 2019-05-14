@@ -1,0 +1,9 @@
+[workspace]
+
+members = [
+	"vasm",
+	"magia-core",
+	"magia-cpu",
+	"magia-cli",
+	"magia-disassembler",
+]
