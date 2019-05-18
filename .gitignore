@@ -4,6 +4,7 @@
 magia-core/target
 magia-cli/target
 magia-cpu/target
+magia-cpu-r68k/target
 magia-disassembler/target
 vasm/target
 

@@ -1,9 +1,7 @@
 #[cfg(test)]
-extern crate vasm;
-
-#[macro_use]
-mod constants;
-pub mod cpu;
-pub mod interrupts;
-mod ops;
-pub mod ram;
+mod tests {
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
+}
