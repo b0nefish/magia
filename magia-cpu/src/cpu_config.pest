@@ -80,7 +80,7 @@ spec_proc = @{ (
     address_register_indirect_with_displacement |
     address_register_indirect_with_index |
     absolute_word_address |
-    absolute_long_address |
+    absolute__address |
     static_operand |
     data_register)
 }
@@ -102,14 +102,14 @@ spec_ea = @{ (
     address_register_indirect_with_displacement |
     address_register |
     immediate |
-    data_register)
-}
+    data_register
+) }
 
 mode = { (
     mode_not_preset |
     mode_user |
-    mode_supervisor)
-}
+    mode_supervisor
+) }
 
 allowed_ea = { (
     ea_not_present |
@@ -122,35 +122,21 @@ allowed_ea = { (
     ea_absolute_long_address |
     ea_program_counter_indirect_with_displacement |
     ea_program_counter_indirect_with_index |
-    ea_immediate) }
+    ea_immediate
+) }
 
-rule = {
-    (name_or_num ~ num ~ spec_proc ~
-     spec_ea ~ bit_pattern ~ allowed_eas ~
-     mode ~ mode ~ mode ~
-     num ~ num ~ num)
-}
+rule = { (
+    name_or_num ~ num ~ spec_proc ~
+    spec_ea ~ bit_pattern ~ allowed_eas ~
+    mode ~ mode ~ mode ~
+    num ~ num ~ num
+) }
 
-allowed_eas = @{
-    (allowed_ea)*
-}
-
-name_or_num = @{
-	(('a'..'z') | ('A'..'Z') | ("_") | ('0'..'9'))*
-}
-
-bit_pattern = @{
-	(('0'..'1') | ("."))*
-}
-
-num = @{
-	(('0'..'9') | ("."))*
-}
+allowed_eas = @{ (allowed_ea)* }
+name_or_num = @{ (('a'..'z') | ('A'..'Z') | ("_") | ('0'..'9'))* }
+bit_pattern = @{ (('0'..'1') | ("."))* }
+num = @{ (('0'..'9') | ("."))* }
 
 WHITESPACE = _{ (" ") | ("\t") | ("\u{000C}") | ("\r") | ("\n") }
-
-COMMENT = _{
-	("//") ~ !("/") ~ (!(("\r") | ("\n")) ~ ANY)* ~ (("\n") | ("\r\n") | ("\r") | EOI)
-}
-
+COMMENT = _{ ("//") ~ !("/") ~ (!(("\r") | ("\n")) ~ ANY)* ~ (("\n") | ("\r\n") | ("\r") | EOI) }
 
