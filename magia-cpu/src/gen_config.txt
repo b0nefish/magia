@@ -10,7 +10,7 @@
 // - Derivations to generate
 // - CPU coverage, cycles and priviledge level
 //
-
+//
 // The derivations are the addressing-mode variants to generate (with
 // value/mask/cycles adjusted accordingly):
 //   A: (an)
@@ -50,21 +50,16 @@
 //   M68KMAKE_GET_OPER_AY_8: retrieve the source value for the current addressing mode knowing the size is byte
 //   M68KMAKE_GET_OPER_AY_16: retrieve the source value for the current addressing mode knowing the size is word
 //   M68KMAKE_GET_OPER_AY_32: retrieve the source value for the current addressing mode knowing the size is long
-
 d000 f1f8 add      b .          071:4 234fc:2
 	u32* r_dst = &DX();
 	u32 src = MASK_OUT_ABOVE_8(DY());
 	u32 dst = MASK_OUT_ABOVE_8(*r_dst);
 	u32 res = src + dst;
-
 	m_n_flag = NFLAG_8(res);
 	m_v_flag = VFLAG_ADD_8(src, dst, res);
 	m_x_flag = m_c_flag = CFLAG_8(res);
 	m_not_z_flag = MASK_OUT_ABOVE_8(res);
-
 	*r_dst = MASK_OUT_BELOW_8(*r_dst) | m_not_z_flag;
-
-
 d000 f1c0 add      b A+-DXWLdxI 071:4 234fc:2
 	u32* r_dst = &DX();
 	u32 src = M68KMAKE_GET_OPER_AY_8;

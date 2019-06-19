@@ -1,5 +1,5 @@
 chunk = _{ SOI
-	~ (rule | (("\t") ~ code))+
+	~ (rule | code)*
     ~ EOI
  }
 
@@ -24,7 +24,7 @@ rule = { (
     hex ~ hex ~ name ~ size ~ allowed_eas ~ (type_cycle)*
 ) }
 
-code = { (ANY)* }
+code = { ("\t") ~ (!(("\r") | ("\n")) ~ ANY)* ~ (("\n") | ("\r\n") | ("\r")) }
 
 allowed_ea = { (
     ea_not_present |
@@ -49,6 +49,6 @@ number = @{ ('0' .. '9') }
 hex = @{ ('a'..'f') ~ (('a'..'f') | number)* }
 name = @{ (('a'..'z') | number) ~ (('a'..'z') | number)* }
 
-WHITESPACE = _{ (" ") | ("\u{000C}") | ("\r") | ("\n") }
-COMMENT = _{ ("//") ~ !("/") ~ (!(("\r") | ("\n")) ~ ANY)* ~ (("\n") | ("\r\n") | ("\r") | EOI) }
+WHITESPACE = _{ (" ") | ("\r") | ("\n") }
+COMMENT = _{ ("//") ~ !("/") ~ (!(("\r") | ("\n")) ~ ANY)* ~ (("\n") | ("\r\n") | ("\r")) }
 

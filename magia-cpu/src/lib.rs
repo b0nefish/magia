@@ -34,7 +34,7 @@ struct Cpu {
 
 impl Cpu {
     /// Step the CPU one cycle forward
-    fn step(cpu: &mut Cpu, memory_bus: &mut MemoryBus) {
+    fn step(cpu: &mut Cpu) {
 
 
     }
