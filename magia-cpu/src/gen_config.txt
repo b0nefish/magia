@@ -50,15 +50,18 @@
 //   M68KMAKE_GET_OPER_AY_8: retrieve the source value for the current addressing mode knowing the size is byte
 //   M68KMAKE_GET_OPER_AY_16: retrieve the source value for the current addressing mode knowing the size is word
 //   M68KMAKE_GET_OPER_AY_32: retrieve the source value for the current addressing mode knowing the size is long
+
 d000 f1f8 add      b .          071:4 234fc:2
 	u32* r_dst = &DX();
 	u32 src = MASK_OUT_ABOVE_8(DY());
 	u32 dst = MASK_OUT_ABOVE_8(*r_dst);
 	u32 res = src + dst;
+
 	m_n_flag = NFLAG_8(res);
 	m_v_flag = VFLAG_ADD_8(src, dst, res);
 	m_x_flag = m_c_flag = CFLAG_8(res);
 	m_not_z_flag = MASK_OUT_ABOVE_8(res);
+
 	*r_dst = MASK_OUT_BELOW_8(*r_dst) | m_not_z_flag;
 d000 f1c0 add      b A+-DXWLdxI 071:4 234fc:2
 	u32* r_dst = &DX();
@@ -717,7 +720,7 @@ c180 f1c0 and      l A+-DXWL    071:12 234fc:4
 027c ffff andi     w .          07:20p 1:16p 234fc:12p
 	if(m_s_flag) {
 		u32 src = OPER_I_16();
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 		m68ki_set_sr(m68ki_get_sr() & src);
 	} else {
 		m68ki_exception_privilege_violation();
@@ -1096,7 +1099,7 @@ e1c0 ffc0 asl      w A+-DXWL    071:8 234fc:6
 
 6000 f000 bcc      b .          071:10 234fc:6
 	if(M68KMAKE_CC) {
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();
 		m68ki_branch_8(MASK_OUT_ABOVE_8(m_ir));
 
 	} else {
@@ -1108,7 +1111,7 @@ e1c0 ffc0 asl      w A+-DXWL    071:8 234fc:6
 	if(M68KMAKE_CC) {
 		u32 offset = OPER_I_16();
 		m_pc -= 2;
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();
 		m68ki_branch_16(offset);
 
 	} else {
@@ -1119,7 +1122,7 @@ e1c0 ffc0 asl      w A+-DXWL    071:8 234fc:6
 
 60ff f0ff bcc      l .          071:10
 	if(M68KMAKE_CC) {
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();
 		m68ki_branch_8(MASK_OUT_ABOVE_8(m_ir));
 	} else
 		m_icount -= m_cyc_bcc_notake_b;
@@ -1129,7 +1132,7 @@ e1c0 ffc0 asl      w A+-DXWL    071:8 234fc:6
 	if(M68KMAKE_CC) {
 		u32 offset = OPER_I_32();
 		m_pc -= 4;
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();
 		m68ki_branch_32(offset);
 
 	} else
@@ -1247,7 +1250,7 @@ eac0 ffc0 bfchg    l ADXWL      234fc:20
 	if(BIT_5(word2))
 		width = REG_D()[width&7];
 
-	/* Offset is signed so we have to use ugly math =( */
+	// Offset is signed so we have to use ugly math =(
 	ea += offset / 8;
 	offset %= 8;
 	if(offset < 0) {
@@ -1317,7 +1320,7 @@ ecc0 ffc0 bfclr    l ADXWL      234fc:20
 	if(BIT_5(word2))
 		width = REG_D()[width&7];
 
-	/* Offset is signed so we have to use ugly math =( */
+	// Offset is signed so we have to use ugly math =(
 	ea += offset / 8;
 	offset %= 8;
 	if(offset < 0) {
@@ -1383,7 +1386,7 @@ ebc0 ffc0 bfexts   l ADXWLdx    234fc:15
 		width = REG_D()[width&7];
 
 	if(BIT_B(word2)) {
-		/* Offset is signed so we have to use ugly math =( */
+		// Offset is signed so we have to use ugly math =(
 		ea += offset / 8;
 		offset %= 8;
 		if(offset < 0) {
@@ -1449,7 +1452,7 @@ e9c0 ffc0 bfextu   l ADXWLdx    234fc:15
 		width = REG_D()[width&7];
 
 	if(BIT_B(word2)) {
-		/* Offset is signed so we have to use ugly math =( */
+		// Offset is signed so we have to use ugly math =(
 		ea += offset / 8;
 		offset %= 8;
 		if(offset < 0) {
@@ -1499,10 +1502,7 @@ edc0 fff8 bfffo    l .          234fc:18
 	m_v_flag = VFLAG_CLEAR;
 	m_c_flag = CFLAG_CLEAR;
 
-	for(bit = 1<<(width-1);bit && !(data & bit);bit>>= 1)
-		offset++;
-
-	REG_D()[(word2>>12)&7] = offset;
+// incomplete
 
 
 edc0 ffc0 bfffo    l ADXWLdx    234fc:28
@@ -1519,7 +1519,7 @@ edc0 ffc0 bfffo    l ADXWLdx    234fc:28
 	if(BIT_5(word2))
 		width = REG_D()[width&7];
 
-	/* Offset is signed so we have to use ugly math =( */
+	// Offset is signed so we have to use ugly math =(
 	ea += offset / 8;
 	local_offset = offset % 8;
 	if(local_offset < 0) {
@@ -1541,10 +1541,8 @@ edc0 ffc0 bfffo    l ADXWLdx    234fc:28
 	m_v_flag = VFLAG_CLEAR;
 	m_c_flag = CFLAG_CLEAR;
 
-	for(bit = 1<<(width-1);bit && !(data & bit);bit>>= 1)
-		offset++;
-
-	REG_D()[(word2>>12)&7] = offset;
+//	for(bit = 1<<(width-1);bit && !(data & bit);bit>>= 1) offset++;
+//  REG_D()[(word2>>12)&7] = offset;
 
 
 efc0 fff8 bfins    l .          234fc:10
@@ -1598,7 +1596,7 @@ efc0 ffc0 bfins    l ADXWL      234fc:17
 		width = REG_D()[width&7];
 
 	if(BIT_B(word2)) {
-		/* Offset is signed so we have to use ugly math =( */
+		// Offset is signed so we have to use ugly math =(
 		ea += offset / 8;
 		offset %= 8;
 		if(offset < 0) {
@@ -1680,7 +1678,7 @@ eec0 ffc0 bfset    l ADXWL      234fc:20
 	if(BIT_5(word2))
 		width = REG_D()[width&7];
 
-	/* Offset is signed so we have to use ugly math =( */
+	// Offset is signed so we have to use ugly math =(
 	ea += offset / 8;
 	offset %= 8;
 	if(offset < 0) {
@@ -1748,7 +1746,7 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 	if(BIT_5(word2))
 		width = REG_D()[width&7];
 
-	/* Offset is signed so we have to use ugly math =( */
+	// Offset is signed so we have to use ugly math =(
 	ea += offset / 8;
 	offset %= 8;
 	if(offset < 0) {
@@ -1783,21 +1781,21 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 
 
 6000 ff00 bra      b .          071234fc:10
-	m68ki_trace_t0();                  /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();
 	m68ki_branch_8(MASK_OUT_ABOVE_8(m_ir));
 
 
 6000 ffff bra      w .          071234fc:10
 	u32 offset = OPER_I_16();
 	m_pc -= 2;
-	m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();
 	m68ki_branch_16(offset);
 
 
 60ff ffff bra      l .          234fc:10
 	u32 offset = OPER_I_32();
 	m_pc -= 4;
-	m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();
 	m68ki_branch_32(offset);
 
 
@@ -1836,14 +1834,14 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 
 
 6100 ff00 bsr      b .          071:18 234fc:7
-	m68ki_trace_t0();                  /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();
 	m68ki_push_32(m_pc);
 	m68ki_branch_8(MASK_OUT_ABOVE_8(m_ir));
 
 
 6100 ffff bsr      w .          071:18 234fc:7
 	u32 offset = OPER_I_16();
-	m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();
 	m68ki_push_32(m_pc);
 	m_pc -= 2;
 	m68ki_branch_16(offset);
@@ -1851,7 +1849,7 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 
 61ff ffff bsr      l .          234fc:7
 	u32 offset = OPER_I_32();
-	m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();
 	m68ki_push_32(m_pc);
 	m_pc -= 4;
 	m68ki_branch_32(offset);
@@ -1876,12 +1874,12 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 
 
 06c0 ffc0 callm    l ADXWLdx    2f:60
-	/* note: watch out for pcrelative modes */
+	// note: watch out for pcrelative modes
 	u32 ea = M68KMAKE_GET_EA_AY_32;
 
-	m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();
 	m_pc += 2;
-	(void)ea;   /* just to avoid an 'unused variable' warning */
+	(void)ea;   // just to avoid an 'unused variable' warning
 	logerror("%s at %08x: called unimplemented instruction %04x (callm)\n",
 					tag(), m_ppc, m_ir);
 
@@ -1893,7 +1891,7 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 	u32* compare = &REG_D()[word2 & 7];
 	u32 res = dest - MASK_OUT_ABOVE_8(*compare);
 
-	m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 	m_n_flag = NFLAG_8(res);
 	m_not_z_flag = MASK_OUT_ABOVE_8(res);
 	m_v_flag = VFLAG_SUB_8(*compare, dest, res);
@@ -1914,7 +1912,7 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 	u32* compare = &REG_D()[word2 & 7];
 	u32 res = dest - MASK_OUT_ABOVE_16(*compare);
 
-	m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 	m_n_flag = NFLAG_16(res);
 	m_not_z_flag = MASK_OUT_ABOVE_16(res);
 	m_v_flag = VFLAG_SUB_16(*compare, dest, res);
@@ -1935,7 +1933,7 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 	u32* compare = &REG_D()[word2 & 7];
 	u32 res = dest - *compare;
 
-	m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 	m_n_flag = NFLAG_32(res);
 	m_not_z_flag = MASK_OUT_ABOVE_32(res);
 	m_v_flag = VFLAG_SUB_32(*compare, dest, res);
@@ -1960,7 +1958,7 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 	u32 dest2 = m68ki_read_16(ea2);
 	u32 res2;
 
-	m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 	m_n_flag = NFLAG_16(res1);
 	m_not_z_flag = MASK_OUT_ABOVE_16(res1);
 	m_v_flag = VFLAG_SUB_16(*compare1, dest1, res1);
@@ -1997,7 +1995,7 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 	u32 dest2 = m68ki_read_32(ea2);
 	u32 res2;
 
-	m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 	m_n_flag = NFLAG_32(res1);
 	m_not_z_flag = MASK_OUT_ABOVE_32(res1);
 	m_v_flag = VFLAG_SUB_32(*compare1, dest1, res1);
@@ -2027,9 +2025,9 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 	s32 src = MAKE_INT_16(DX());
 	s32 bound = MAKE_INT_16(DY());
 
-	m_not_z_flag = ZFLAG_16(src); /* Undocumented */
-	m_v_flag = VFLAG_CLEAR;   /* Undocumented */
-	m_c_flag = CFLAG_CLEAR;   /* Undocumented */
+	m_not_z_flag = ZFLAG_16(src); // Undocumented
+	m_v_flag = VFLAG_CLEAR;   // Undocumented
+	m_c_flag = CFLAG_CLEAR;   // Undocumented
 
 	if(src < 0 || src > bound)
 	{
@@ -2042,9 +2040,9 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 	s32 src = MAKE_INT_16(DX());
 	s32 bound = MAKE_INT_16(M68KMAKE_GET_OPER_AY_16);
 
-	m_not_z_flag = ZFLAG_16(src); /* Undocumented */
-	m_v_flag = VFLAG_CLEAR;   /* Undocumented */
-	m_c_flag = CFLAG_CLEAR;   /* Undocumented */
+	m_not_z_flag = ZFLAG_16(src); // Undocumented
+	m_v_flag = VFLAG_CLEAR;   // Undocumented
+	m_c_flag = CFLAG_CLEAR;   // Undocumented
 
 	if(src < 0 || src > bound) {
 		m_n_flag = (src < 0)<<7;
@@ -2056,9 +2054,9 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 	s32 src = MAKE_INT_32(DX());
 	s32 bound = MAKE_INT_32(DY());
 
-	m_not_z_flag = ZFLAG_32(src); /* Undocumented */
-	m_v_flag = VFLAG_CLEAR;   /* Undocumented */
-	m_c_flag = CFLAG_CLEAR;   /* Undocumented */
+	m_not_z_flag = ZFLAG_32(src); // Undocumented
+	m_v_flag = VFLAG_CLEAR;   // Undocumented
+	m_c_flag = CFLAG_CLEAR;   // Undocumented
 
 	if(src < 0 || src > bound) {
 		m_n_flag = (src < 0)<<7;
@@ -2070,9 +2068,9 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 	s32 src = MAKE_INT_32(DX());
 	s32 bound = MAKE_INT_32(M68KMAKE_GET_OPER_AY_32);
 
-	m_not_z_flag = ZFLAG_32(src); /* Undocumented */
-	m_v_flag = VFLAG_CLEAR;   /* Undocumented */
-	m_c_flag = CFLAG_CLEAR;   /* Undocumented */
+	m_not_z_flag = ZFLAG_32(src); // Undocumented
+	m_v_flag = VFLAG_CLEAR;   // Undocumented
+	m_c_flag = CFLAG_CLEAR;   // Undocumented
 
 	if(src < 0 || src > bound) {
 		m_n_flag = (src < 0)<<7;
@@ -2311,7 +2309,7 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 4200 ffc0 clr      b A+-DXWL    0:8
 	u32 ea = M68KMAKE_GET_EA_AY_8;
 
-	m68ki_read_8(ea);   /* the 68000 does a dummy read, the value is discarded */
+	m68ki_read_8(ea);   // the 68000 does a dummy read, the value is discarded
 	m68ki_write_8(ea, 0);
 
 	m_n_flag = NFLAG_CLEAR;
@@ -2343,7 +2341,7 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 4240 ffc0 clr      w A+-DXWL    0:8
 	u32 ea = M68KMAKE_GET_EA_AY_16;
 
-	m68ki_read_16(ea);  /* the 68000 does a dummy read, the value is discarded */
+	m68ki_read_16(ea);  // the 68000 does a dummy read, the value is discarded
 
 	m68ki_write_16(ea, 0);
 
@@ -2376,7 +2374,7 @@ e8c0 ffc0 bftst    l ADXWLdx    234fc:13
 4280 ffc0 clr      l A+-DXWL    0:12
 	u32 ea = M68KMAKE_GET_EA_AY_32;
 
-	m68ki_read_32(ea);  /* the 68000 does a dummy read, the value is discarded */
+	m68ki_read_32(ea);  // the 68000 does a dummy read, the value is discarded
 	m68ki_write_32(ea, 0);
 
 	m_n_flag = NFLAG_CLEAR;
@@ -2801,7 +2799,7 @@ f278 fff8 ftrapcc  l .          23:4
 	if(res != 0xffff) {
 		u32 offset = OPER_I_16();
 		m_pc -= 2;
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 		m68ki_branch_16(offset);
 		m_icount -= m_cyc_dbcc_f_noexp;
 	} else {
@@ -2819,7 +2817,7 @@ f278 fff8 ftrapcc  l .          23:4
 		if(res != 0xffff) {
 			u32 offset = OPER_I_16();
 			m_pc -= 2;
-			m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+			m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 			m68ki_branch_16(offset);
 			m_icount -= m_cyc_dbcc_f_noexp;
 		} else {
@@ -2940,19 +2938,19 @@ f278 fff8 ftrapcc  l .          23:4
 	u64 remainder = 0;
 
 	if(divisor != 0) {
-		if(BIT_A(word2)) {   /* 64 bit */
+		if(BIT_A(word2)) {   // 64 bit
 			dividend = REG_D()[word2 & 7];
 			dividend <<= 32;
 			dividend |= REG_D()[(word2 >> 12) & 7];
 
-			if(BIT_B(word2)) {       /* signed */
+			if(BIT_B(word2)) {       // signed
 				quotient  = (u64)((s64)dividend / (s64)((s32)divisor));
 				remainder = (u64)((s64)dividend % (s64)((s32)divisor));
 				if((s64)quotient != (s64)((s32)quotient)) {
 					m_v_flag = VFLAG_SET;
 					goto done;
 				}
-			} else {                 /* unsigned */
+			} else {                 // unsigned
 				quotient = dividend / divisor;
 				if(quotient > 0xffffffff) {
 					m_v_flag = VFLAG_SET;
@@ -2960,12 +2958,12 @@ f278 fff8 ftrapcc  l .          23:4
 				}
 				remainder = dividend % divisor;
 			}
-		} else {    /* 32 bit */
+		} else {    // 32 bit
 			dividend = REG_D()[(word2 >> 12) & 7];
-			if(BIT_B(word2)) {       /* signed */
+			if(BIT_B(word2)) {       // signed
 				quotient  = (u64)((s64)((s32)dividend) / (s64)((s32)divisor));
 				remainder = (u64)((s64)((s32)dividend) % (s64)((s32)divisor));
-			} else {                 /* unsigned */
+			} else {                 // unsigned
 				quotient = dividend / divisor;
 				remainder = dividend % divisor;
 			}
@@ -2992,19 +2990,19 @@ f278 fff8 ftrapcc  l .          23:4
 	u64 remainder = 0;
 
 	if(divisor != 0) {
-		if(BIT_A(word2)) {   /* 64 bit */
+		if(BIT_A(word2)) {   // 64 bit
 			dividend = REG_D()[word2 & 7];
 			dividend <<= 32;
 			dividend |= REG_D()[(word2 >> 12) & 7];
 
-			if(BIT_B(word2)) {       /* signed */
+			if(BIT_B(word2)) {       // signed
 				quotient  = (u64)((s64)dividend / (s64)((s32)divisor));
 				remainder = (u64)((s64)dividend % (s64)((s32)divisor));
 				if((s64)quotient != (s64)((s32)quotient)) {
 					m_v_flag = VFLAG_SET;
 					goto done;
 				}
-			} else {                 /* unsigned */
+			} else {                 // unsigned
 				quotient = dividend / divisor;
 				if(quotient > 0xffffffff) {
 					m_v_flag = VFLAG_SET;
@@ -3012,12 +3010,12 @@ f278 fff8 ftrapcc  l .          23:4
 				}
 				remainder = dividend % divisor;
 			}
-		} else {    /* 32 bit */
+		} else {    // 32 bit
 			dividend = REG_D()[(word2 >> 12) & 7];
-			if(BIT_B(word2)) {       /* signed */
+			if(BIT_B(word2)) {       // signed
 				quotient  = (u64)((s64)((s32)dividend) / (s64)((s32)divisor));
 				remainder = (u64)((s64)((s32)dividend) % (s64)((s32)divisor));
-			} else {                 /* unsigned */
+			} else {                 // unsigned
 				quotient = dividend / divisor;
 				remainder = dividend % divisor;
 			}
@@ -3171,7 +3169,7 @@ b180 f1c0 eor      l A+-DXWL    071:12 234fc:4
 0a7c ffff eori     w .          07:20p 1:16p 234fc:12p
 	if(m_s_flag) {
 		u32 src = OPER_I_16();
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 		m68ki_set_sr(m68ki_get_sr() ^ src);
 	} else {
 		m68ki_exception_privilege_violation();
@@ -3241,12 +3239,12 @@ c188 f1f8 exg      l .          071:6 234fc:2
 
 4ec0 ffc0 jmp      l ADXWLdx    071:4 234fc:0
 	m68ki_jump(M68KMAKE_GET_EA_AY_32);
-	m68ki_trace_t0();                  /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();                  // auto-disable (see m68kcpu.h)
 
 
 4e80 ffc0 jsr      l ADXWLdx    071:12 234fc:0
 	u32 ea = M68KMAKE_GET_EA_AY_32;
-	m68ki_trace_t0();                  /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();                  // auto-disable (see m68kcpu.h)
 	m68ki_push_32(m_pc);
 	m68ki_jump(ea);
 
@@ -4459,7 +4457,7 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 
 
 40c0 fff8 move     w .          1:4p 234fc:8p
-	if(m_s_flag) { /* NS990408 */
+	if(m_s_flag) { // NS990408
 		DY() = MASK_OUT_BELOW_16(DY()) | m68ki_get_sr();
 	} else {
 		m68ki_exception_privilege_violation();
@@ -4472,7 +4470,7 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 
 
 40c0 ffc0 move     w A+-DXWL    1234fc:8p
-	if(m_s_flag) { /* NS990408 */
+	if(m_s_flag) { // NS990408
 		u32 ea = M68KMAKE_GET_EA_AY_16;
 		m68ki_write_16(ea, m68ki_get_sr());
 	} else {
@@ -4491,7 +4489,7 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 46c0 ffc0 move     w A+-DXWLdxI 071:12p 234fc:8p
 	if(m_s_flag) {
 		u32 new_sr = M68KMAKE_GET_OPER_AY_16;
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 		m68ki_set_sr(new_sr);
 
 	} else {
@@ -4509,7 +4507,7 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 
 4e60 fff8 move     l .          07:4p 1:6p 234fc:2p
 	if(m_s_flag) {
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 		REG_USP() = AY();
 	} else {
 		m68ki_exception_privilege_violation();
@@ -4520,18 +4518,18 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	if(m_s_flag) {
 		u32 word2 = OPER_I_16();
 
-		m68ki_trace_t0();          /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();          // auto-disable (see m68kcpu.h)
 		switch(word2 & 0xfff) {
-		case 0x000:            /* SFC */
+		case 0x000:            // SFC
 			REG_DA()[(word2 >> 12) & 15] = m_sfc;
 			break;
-		case 0x001:            /* DFC */
+		case 0x001:            // DFC
 			REG_DA()[(word2 >> 12) & 15] = m_dfc;
 			break;
-		case 0x800:            /* USP */
+		case 0x800:            // USP
 			REG_DA()[(word2 >> 12) & 15] = REG_USP();
 			break;
-		case 0x801:            /* VBR */
+		case 0x801:            // VBR
 			REG_DA()[(word2 >> 12) & 15] = m_vbr;
 			break;
 		default:
@@ -4547,30 +4545,30 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	if(m_s_flag) {
 		u32 word2 = OPER_I_16();
 
-		m68ki_trace_t0();          /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();          // auto-disable (see m68kcpu.h)
 		switch(word2 & 0xfff) {
-		case 0x000:            /* SFC */
+		case 0x000:            // SFC
 			REG_DA()[(word2 >> 12) & 15] = m_sfc;
 			break;
-		case 0x001:            /* DFC */
+		case 0x001:            // DFC
 			REG_DA()[(word2 >> 12) & 15] = m_dfc;
 			break;
-		case 0x002:            /* CACR */
+		case 0x002:            // CACR
 			REG_DA()[(word2 >> 12) & 15] = m_cacr;
 			break;
-		case 0x800:            /* USP */
+		case 0x800:            // USP
 			REG_DA()[(word2 >> 12) & 15] = REG_USP();
 			break;
-		case 0x801:            /* VBR */
+		case 0x801:            // VBR
 			REG_DA()[(word2 >> 12) & 15] = m_vbr;
 			break;
-		case 0x802:            /* CAAR */
+		case 0x802:            // CAAR
 			REG_DA()[(word2 >> 12) & 15] = m_caar;
 			break;
-		case 0x803:            /* MSP */
+		case 0x803:            // MSP
 			REG_DA()[(word2 >> 12) & 15] = m_m_flag ? REG_SP() : REG_MSP();
 			break;
-		case 0x804:            /* ISP */
+		case 0x804:            // ISP
 			REG_DA()[(word2 >> 12) & 15] = m_m_flag ? REG_ISP() : REG_SP();
 			break;
 		default:
@@ -4586,54 +4584,54 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	if(m_s_flag) {
 		u32 word2 = OPER_I_16();
 
-		m68ki_trace_t0();          /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();          // auto-disable (see m68kcpu.h)
 		switch(word2 & 0xfff) {
-		case 0x000:            /* SFC */
+		case 0x000:            // SFC
 			REG_DA()[(word2 >> 12) & 15] = m_sfc;
 			break;
-		case 0x001:            /* DFC */
+		case 0x001:            // DFC
 			REG_DA()[(word2 >> 12) & 15] = m_dfc;
 			break;
-		case 0x002:            /* CACR */
+		case 0x002:            // CACR
 			REG_DA()[(word2 >> 12) & 15] = m_cacr;
 			break;
-		case 0x800:            /* USP */
+		case 0x800:            // USP
 			REG_DA()[(word2 >> 12) & 15] = REG_USP();
 			break;
-		case 0x801:            /* VBR */
+		case 0x801:            // VBR
 			REG_DA()[(word2 >> 12) & 15] = m_vbr;
 			break;
-		case 0x802:            /* CAAR */
+		case 0x802:            // CAAR
 			REG_DA()[(word2 >> 12) & 15] = m_caar;
 			break;
-		case 0x803:            /* MSP */
+		case 0x803:            // MSP
 			REG_DA()[(word2 >> 12) & 15] = m_m_flag ? REG_SP() : REG_MSP();
 			break;
-		case 0x804:            /* ISP */
+		case 0x804:            // ISP
 			REG_DA()[(word2 >> 12) & 15] = m_m_flag ? REG_ISP() : REG_SP();
 			break;
-		case 0x003:             /* TC */
+		case 0x003:             // TC
 			REG_DA()[(word2 >> 12) & 15] = m_mmu_tc;
 			break;
-		case 0x004:             /* ITT0 (040+, ACR0 on ColdFire) */
+		case 0x004:             // ITT0 (040+, ACR0 on ColdFire)
 			REG_DA()[(word2 >> 12) & 15] = m_mmu_itt0;
 			break;
-		case 0x005:             /* ITT1 (040+, ACR1 on ColdFire) */
+		case 0x005:             // ITT1 (040+, ACR1 on ColdFire)
 			REG_DA()[(word2 >> 12) & 15] = m_mmu_itt1;
 			break;
-		case 0x006:             /* DTT0 */
+		case 0x006:             // DTT0
 			REG_DA()[(word2 >> 12) & 15] = m_mmu_dtt0;
 			break;
-		case 0x007:             /* DTT1 */
+		case 0x007:             // DTT1
 			REG_DA()[(word2 >> 12) & 15] = m_mmu_dtt1;
 			break;
-		case 0x805:             /* MMUSR */
+		case 0x805:             // MMUSR
 			REG_DA()[(word2 >> 12) & 15] = m_mmu_sr_040;
 			break;
-		case 0x806:             /* URP */
+		case 0x806:             // URP
 			REG_DA()[(word2 >> 12) & 15] = m_mmu_urp_aptr;
 			break;
-		case 0x807:             /* SRP */
+		case 0x807:             // SRP
 			REG_DA()[(word2 >> 12) & 15] = m_mmu_srp_aptr;
 			break;
 		default:
@@ -4649,67 +4647,67 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	if(m_s_flag) {
 		u32 word2 = OPER_I_16();
 
-		m68ki_trace_t0();          /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();          // auto-disable (see m68kcpu.h)
 		switch(word2 & 0xfff) {
-		case 0x000:            /* SFC */
+		case 0x000:            // SFC
 			REG_DA()[(word2 >> 12) & 15] = m_sfc;
 			break;
-		case 0x001:            /* DFC */
+		case 0x001:            // DFC
 			REG_DA()[(word2 >> 12) & 15] = m_dfc;
 			break;
-		case 0x002:            /* CACR */
+		case 0x002:            // CACR
 			REG_DA()[(word2 >> 12) & 15] = m_cacr;
 			break;
-		case 0x800:            /* USP */
+		case 0x800:            // USP
 			REG_DA()[(word2 >> 12) & 15] = REG_USP();
 			break;
-		case 0x801:            /* VBR */
+		case 0x801:            // VBR
 			REG_DA()[(word2 >> 12) & 15] = m_vbr;
 			break;
-		case 0x802:            /* CAAR */
+		case 0x802:            // CAAR
 			REG_DA()[(word2 >> 12) & 15] = m_caar;
 			break;
-		case 0x803:            /* MSP */
+		case 0x803:            // MSP
 			REG_DA()[(word2 >> 12) & 15] = m_m_flag ? REG_SP() : REG_MSP();
 			break;
-		case 0x804:            /* ISP */
+		case 0x804:            // ISP
 			REG_DA()[(word2 >> 12) & 15] = m_m_flag ? REG_ISP() : REG_SP();
 			break;
-		case 0x004:             /* ITT0 (040+, ACR0 on ColdFire) */
+		case 0x004:             // ITT0 (040+, ACR0 on ColdFire)
 			REG_DA()[(word2 >> 12) & 15] = m_mmu_acr0;
 			break;
-		case 0x005:             /* ITT1 (040+, ACR1 on ColdFire) */
+		case 0x005:             // ITT1 (040+, ACR1 on ColdFire)
 			REG_DA()[(word2 >> 12) & 15] = m_mmu_acr1;
 			break;
-		case 0x006:             /* DTT0 */
+		case 0x006:             // DTT0
 			REG_DA()[(word2 >> 12) & 15] = m_mmu_acr2;
 			break;
-		case 0x007:             /* DTT1 */
+		case 0x007:             // DTT1
 			REG_DA()[(word2 >> 12) & 15] = m_mmu_acr3;
 			break;
 		case 0xc00: // ROMBAR0
-			/* TODO */
+			// TODO
 			break;
 		case 0xc01: // ROMBAR1
-			/* TODO */
+			// TODO
 			break;
 		case 0xc04: // RAMBAR0
-			/* TODO */
+			// TODO
 			break;
 		case 0xc05: // RAMBAR1
-			/* TODO */
+			// TODO
 			break;
 		case 0xc0c: // MPCR
-			/* TODO */
+			// TODO
 			break;
 		case 0xc0d: // EDRAMBAR
-			/* TODO */
+			// TODO
 			break;
 		case 0xc0e: // SECMBAR
-			/* TODO */
+			// TODO
 			break;
 		case 0xc0f: // MBAR
-			/* TODO */
+			// TODO
 			break;
 		default:
 			m68ki_exception_illegal();
@@ -4724,18 +4722,18 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	if(m_s_flag) {
 		u32 word2 = OPER_I_16();
 
-		m68ki_trace_t0();          /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();          // auto-disable (see m68kcpu.h)
 		switch (word2 & 0xfff) {
-		case 0x000:            /* SFC */
+		case 0x000:            // SFC
 			m_sfc = REG_DA()[(word2 >> 12) & 15] & 7;
 			break;
-		case 0x001:            /* DFC */
+		case 0x001:            // DFC
 			m_dfc = REG_DA()[(word2 >> 12) & 15] & 7;
 			break;
-		case 0x800:            /* USP */
+		case 0x800:            // USP
 			REG_USP() = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x801:            /* VBR */
+		case 0x801:            // VBR
 			m_vbr = REG_DA()[(word2 >> 12) & 15];
 			break;
 		default:
@@ -4751,16 +4749,16 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	if(m_s_flag) {
 		u32 word2 = OPER_I_16();
 
-		m68ki_trace_t0();          /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();          // auto-disable (see m68kcpu.h)
 		switch (word2 & 0xfff) {
-		case 0x000:            /* SFC */
+		case 0x000:            // SFC
 			m_sfc = REG_DA()[(word2 >> 12) & 15] & 7;
 			break;
-		case 0x001:            /* DFC */
+		case 0x001:            // DFC
 			m_dfc = REG_DA()[(word2 >> 12) & 15] & 7;
 			break;
-		case 0x002:            /* CACR */
-			/* 68030 can write all bits except 5-7, 040 can write all */
+		case 0x002:            // CACR
+			// 68030 can write all bits except 5-7, 040 can write all
 			m_cacr = REG_DA()[(word2 >> 12) & 15] & 0x0f;
 
 			if (m_cacr & (M68K_CACR_CI | M68K_CACR_CEI)) {
@@ -4768,24 +4766,24 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 			}
 			break;
 			break;
-		case 0x800:            /* USP */
+		case 0x800:            // USP
 			REG_USP() = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x801:            /* VBR */
+		case 0x801:            // VBR
 			m_vbr = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x802:            /* CAAR */
+		case 0x802:            // CAAR
 			m_caar = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x803:            /* MSP */
-			/* we are in supervisor mode so just check for M flag */
+		case 0x803:            // MSP
+			// we are in supervisor mode so just check for M flag
 			if(!m_m_flag) {
 				REG_MSP() = REG_DA()[(word2 >> 12) & 15];
 			} else {
 				REG_SP() = REG_DA()[(word2 >> 12) & 15];
 			}
 			break;
-		case 0x804:            /* ISP */
+		case 0x804:            // ISP
 			if(!m_m_flag) {
 				REG_SP() = REG_DA()[(word2 >> 12) & 15];
 			} else {
@@ -4805,16 +4803,16 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	if(m_s_flag) {
 		u32 word2 = OPER_I_16();
 
-		m68ki_trace_t0();          /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();          // auto-disable (see m68kcpu.h)
 		switch (word2 & 0xfff) {
-		case 0x000:            /* SFC */
+		case 0x000:            // SFC
 			m_sfc = REG_DA()[(word2 >> 12) & 15] & 7;
 			break;
-		case 0x001:            /* DFC */
+		case 0x001:            // DFC
 			m_dfc = REG_DA()[(word2 >> 12) & 15] & 7;
 			break;
-		case 0x002:            /* CACR */
-			/* 68030 can write all bits except 5-7, 040 can write all */
+		case 0x002:            // CACR
+			// 68030 can write all bits except 5-7, 040 can write all
 			m_cacr = REG_DA()[(word2 >> 12) & 15] & 0xff1f;
 
 			if (m_cacr & (M68K_CACR_CI | M68K_CACR_CEI)) {
@@ -4822,24 +4820,24 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 			}
 			break;
 			break;
-		case 0x800:            /* USP */
+		case 0x800:            // USP
 			REG_USP() = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x801:            /* VBR */
+		case 0x801:            // VBR
 			m_vbr = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x802:            /* CAAR */
+		case 0x802:            // CAAR
 			m_caar = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x803:            /* MSP */
-			/* we are in supervisor mode so just check for M flag */
+		case 0x803:            // MSP
+			// we are in supervisor mode so just check for M flag
 			if(!m_m_flag) {
 				REG_MSP() = REG_DA()[(word2 >> 12) & 15];
 			} else {
 				REG_SP() = REG_DA()[(word2 >> 12) & 15];
 			}
 			break;
-		case 0x804:            /* ISP */
+		case 0x804:            // ISP
 			if(!m_m_flag) {
 				REG_SP() = REG_DA()[(word2 >> 12) & 15];
 			} else {
@@ -4859,46 +4857,46 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	if(m_s_flag) {
 		u32 word2 = OPER_I_16();
 
-		m68ki_trace_t0();          /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();          // auto-disable (see m68kcpu.h)
 		switch (word2 & 0xfff) {
-		case 0x000:            /* SFC */
+		case 0x000:            // SFC
 			m_sfc = REG_DA()[(word2 >> 12) & 15] & 7;
 			break;
-		case 0x001:            /* DFC */
+		case 0x001:            // DFC
 			m_dfc = REG_DA()[(word2 >> 12) & 15] & 7;
 			break;
-		case 0x002:            /* CACR */
-			/* 68030 can write all bits except 5-7, 040 can write all */
+		case 0x002:            // CACR
+			// 68030 can write all bits except 5-7, 040 can write all
 			m_cacr = REG_DA()[(word2 >> 12) & 15];
 			if (m_cacr & (M68K_CACR_CI | M68K_CACR_CEI)) {
 				m68ki_ic_clear();
 			}
 			break;
-		case 0x800:            /* USP */
+		case 0x800:            // USP
 			REG_USP() = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x801:            /* VBR */
+		case 0x801:            // VBR
 			m_vbr = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x802:            /* CAAR */
+		case 0x802:            // CAAR
 			m_caar = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x803:            /* MSP */
-			/* we are in supervisor mode so just check for M flag */
+		case 0x803:            // MSP
+			// we are in supervisor mode so just check for M flag
 			if(!m_m_flag) {
 				REG_MSP() = REG_DA()[(word2 >> 12) & 15];
 			} else {
 				REG_SP() = REG_DA()[(word2 >> 12) & 15];
 			}
 			break;
-		case 0x804:            /* ISP */
+		case 0x804:            // ISP
 			if(!m_m_flag) {
 				REG_SP() = REG_DA()[(word2 >> 12) & 15];
 			} else {
 				REG_ISP() = REG_DA()[(word2 >> 12) & 15];
 			}
 			break;
-		case 0x003:         /* TC */
+		case 0x003:         // TC
 			m_mmu_tc = REG_DA()[(word2 >> 12) & 15];
 
 			if (m_mmu_tc & 0x8000)
@@ -4910,25 +4908,25 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 				m_pmmu_enabled = 0;
 			}
 			break;
-		case 0x004:         /* ITT0 */
+		case 0x004:         // ITT0
 			m_mmu_itt0 = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x005:         /* ITT1 */
+		case 0x005:         // ITT1
 			m_mmu_itt1 = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x006:         /* DTT0 */
+		case 0x006:         // DTT0
 			m_mmu_dtt0 = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x007:         /* DTT1 */
+		case 0x007:         // DTT1
 			m_mmu_dtt1 = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x805:         /* MMUSR */
+		case 0x805:         // MMUSR
 			m_mmu_sr_040 = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x806:         /* URP */
+		case 0x806:         // URP
 			m_mmu_urp_aptr = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x807:         /* SRP */
+		case 0x807:         // SRP
 			m_mmu_srp_aptr = REG_DA()[(word2 >> 12) & 15];
 			break;
 		default:
@@ -4944,81 +4942,81 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	if(m_s_flag) {
 		u32 word2 = OPER_I_16();
 
-		m68ki_trace_t0();          /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();          // auto-disable (see m68kcpu.h)
 		switch (word2 & 0xfff) {
-		case 0x000:            /* SFC */
+		case 0x000:            // SFC
 			m_sfc = REG_DA()[(word2 >> 12) & 15] & 7;
 			break;
-		case 0x001:            /* DFC */
+		case 0x001:            // DFC
 			m_dfc = REG_DA()[(word2 >> 12) & 15] & 7;
 			break;
-		case 0x002:            /* CACR */
-			/* 68030 can write all bits except 5-7, 040 can write all */
+		case 0x002:            // CACR
+			// 68030 can write all bits except 5-7, 040 can write all
 			m_cacr = REG_DA()[(word2 >> 12) & 15] & 0x0f;
 
 			if (m_cacr & (M68K_CACR_CI | M68K_CACR_CEI)) {
 				m68ki_ic_clear();
 			}
 			break;
-		case 0x800:            /* USP */
+		case 0x800:            // USP
 			REG_USP() = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x801:            /* VBR */
+		case 0x801:            // VBR
 			m_vbr = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x802:            /* CAAR */
+		case 0x802:            // CAAR
 			m_caar = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x803:            /* MSP */
-			/* we are in supervisor mode so just check for M flag */
+		case 0x803:            // MSP
+			// we are in supervisor mode so just check for M flag
 			if(!m_m_flag) {
 				REG_MSP() = REG_DA()[(word2 >> 12) & 15];
 			} else {
 				REG_SP() = REG_DA()[(word2 >> 12) & 15];
 			}
 			break;
-		case 0x804:            /* ISP */
+		case 0x804:            // ISP
 			if(!m_m_flag) {
 				REG_SP() = REG_DA()[(word2 >> 12) & 15];
 			} else {
 				REG_ISP() = REG_DA()[(word2 >> 12) & 15];
 			}
 			break;
-		case 0x004:         /* ITT0 */
+		case 0x004:         // ITT0
 			m_mmu_acr0 = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x005:         /* ITT1 */
+		case 0x005:         // ITT1
 			m_mmu_acr1 = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x006:         /* DTT0 */
+		case 0x006:         // DTT0
 			m_mmu_acr2 = REG_DA()[(word2 >> 12) & 15];
 			break;
-		case 0x007:         /* DTT1 */
+		case 0x007:         // DTT1
 			m_mmu_acr3 = REG_DA()[(word2 >> 12) & 15];
 			break;
 		case 0xc00: // ROMBAR0
-			/* TODO */
+			// TODO
 			break;
 		case 0xc01: // ROMBAR1
-			/* TODO */
+			// TODO
 			break;
 		case 0xc04: // RAMBAR0
-			/* TODO */
+			// TODO
 			break;
 		case 0xc05: // RAMBAR1
-			/* TODO */
+			// TODO
 			break;
 		case 0xc0c: // MPCR
-			/* TODO */
+			// TODO
 			break;
 		case 0xc0d: // EDRAMBAR
-			/* TODO */
+			// TODO
 			break;
 		case 0xc0e: // SECMBAR
-			/* TODO */
+			// TODO
 			break;
 		case 0xc0f: // MBAR
-			/* TODO */
+			// TODO
 			break;
 		default:
 			m68ki_exception_illegal();
@@ -5035,13 +5033,13 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	u32 ea = AY();
 	u32 count = 0;
 
-	for(; i < 16; i++)
-		if(register_list & (1 << i)) {
-			ea -= 2;
-			m68ki_write_16(ea, MASK_OUT_ABOVE_16(REG_DA()[15-i]));
-			count++;
-		}
-	AY() = ea;
+//	for(; i < 16; i++)
+//		if(register_list & (1 << i)) {
+//			ea -= 2;
+//			m68ki_write_16(ea, MASK_OUT_ABOVE_16(REG_DA()[15-i]));
+//			count++;
+//		}
+//	AY() = ea;
 
 	m_icount -= count<<m_cyc_movem_w;
 
@@ -5052,12 +5050,12 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	u32 ea = M68KMAKE_GET_EA_AY_16;
 	u32 count = 0;
 
-	for(; i < 16; i++)
-		if(register_list & (1 << i)) {
-			m68ki_write_16(ea, MASK_OUT_ABOVE_16(REG_DA()[i]));
-			ea += 2;
-			count++;
-		}
+//	for(; i < 16; i++)
+//		if(register_list & (1 << i)) {
+//			m68ki_write_16(ea, MASK_OUT_ABOVE_16(REG_DA()[i]));
+//			ea += 2;
+//			count++;
+//		}
 
 	m_icount -= count<<m_cyc_movem_w;
 
@@ -5068,14 +5066,14 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	u32 ea = AY();
 	u32 count = 0;
 
-	for(; i < 16; i++)
-		if(register_list & (1 << i)) {
-			ea -= 4;
-			m68ki_write_16(ea+2, REG_DA()[15-i] & 0xFFFF );
-			m68ki_write_16(ea, (REG_DA()[15-i] >> 16) & 0xFFFF );
-			count++;
-		}
-	AY() = ea;
+//	for(; i < 16; i++)
+//		if(register_list & (1 << i)) {
+//			ea -= 4;
+//			m68ki_write_16(ea+2, REG_DA()[15-i] & 0xFFFF );
+//			m68ki_write_16(ea, (REG_DA()[15-i] >> 16) & 0xFFFF );
+//			count++;
+//		}
+//	AY() = ea;
 
 	m_icount -= count<<m_cyc_movem_l;
 
@@ -5086,12 +5084,12 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	u32 ea = M68KMAKE_GET_EA_AY_32;
 	u32 count = 0;
 
-	for(; i < 16; i++)
-		if(register_list & (1 << i)) {
-			m68ki_write_32(ea, REG_DA()[i]);
-			ea += 4;
-			count++;
-		}
+//	for(; i < 16; i++)
+//		if(register_list & (1 << i)) {
+//			m68ki_write_32(ea, REG_DA()[i]);
+//			ea += 4;
+//			count++;
+//		}
 
 	m_icount -= count<<m_cyc_movem_l;
 
@@ -5102,13 +5100,13 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	u32 ea = AY();
 	u32 count = 0;
 
-	for(; i < 16; i++)
-		if(register_list & (1 << i)) {
-			REG_DA()[i] = MAKE_INT_16(MASK_OUT_ABOVE_16(m68ki_read_16(ea)));
-			ea += 2;
-			count++;
-		}
-	AY() = ea;
+//	for(; i < 16; i++)
+//		if(register_list & (1 << i)) {
+//			REG_DA()[i] = MAKE_INT_16(MASK_OUT_ABOVE_16(m68ki_read_16(ea)));
+//			ea += 2;
+//			count++;
+//		}
+//	AY() = ea;
 
 	m_icount -= count<<m_cyc_movem_w;
 
@@ -5119,12 +5117,12 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	u32 ea = EA_PCDI_16();
 	u32 count = 0;
 
-	for(; i < 16; i++)
-		if(register_list & (1 << i)) {
-			REG_DA()[i] = MAKE_INT_16(MASK_OUT_ABOVE_16(m68ki_read_pcrel_16(ea)));
-			ea += 2;
-			count++;
-		}
+//	for(; i < 16; i++)
+//		if(register_list & (1 << i)) {
+//			REG_DA()[i] = MAKE_INT_16(MASK_OUT_ABOVE_16(m68ki_read_pcrel_16(ea)));
+//			ea += 2;
+//			count++;
+//		}
 
 	m_icount -= count<<m_cyc_movem_w;
 
@@ -5135,12 +5133,12 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	u32 ea = EA_PCIX_16();
 	u32 count = 0;
 
-	for(; i < 16; i++)
-		if(register_list & (1 << i)) {
-			REG_DA()[i] = MAKE_INT_16(MASK_OUT_ABOVE_16(m68ki_read_pcrel_16(ea)));
-			ea += 2;
-			count++;
-		}
+//	for(; i < 16; i++)
+//		if(register_list & (1 << i)) {
+//			REG_DA()[i] = MAKE_INT_16(MASK_OUT_ABOVE_16(m68ki_read_pcrel_16(ea)));
+//			ea += 2;
+//			count++;
+//		}
 
 	m_icount -= count<<m_cyc_movem_w;
 
@@ -5151,12 +5149,12 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	u32 ea = M68KMAKE_GET_EA_AY_16;
 	u32 count = 0;
 
-	for(; i < 16; i++)
-		if(register_list & (1 << i)) {
-			REG_DA()[i] = MAKE_INT_16(MASK_OUT_ABOVE_16(m68ki_read_16(ea)));
-			ea += 2;
-			count++;
-		}
+//	for(; i < 16; i++)
+//		if(register_list & (1 << i)) {
+//			REG_DA()[i] = MAKE_INT_16(MASK_OUT_ABOVE_16(m68ki_read_16(ea)));
+//			ea += 2;
+//			count++;
+//		}
 
 	m_icount -= count<<m_cyc_movem_w;
 
@@ -5167,12 +5165,12 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	u32 ea = AY();
 	u32 count = 0;
 
-	for(; i < 16; i++)
-		if(register_list & (1 << i)) {
-			REG_DA()[i] = m68ki_read_32(ea);
-			ea += 4;
-			count++;
-		}
+//	for(; i < 16; i++)
+//		if(register_list & (1 << i)) {
+//			REG_DA()[i] = m68ki_read_32(ea);
+//			ea += 4;
+//			count++;
+//		}
 	AY() = ea;
 
 	m_icount -= count<<m_cyc_movem_l;
@@ -5184,12 +5182,12 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	u32 ea = EA_PCDI_32();
 	u32 count = 0;
 
-	for(; i < 16; i++)
-		if(register_list & (1 << i)) {
-			REG_DA()[i] = m68ki_read_pcrel_32(ea);
-			ea += 4;
-			count++;
-		}
+//	for(; i < 16; i++)
+//		if(register_list & (1 << i)) {
+//			REG_DA()[i] = m68ki_read_pcrel_32(ea);
+//			ea += 4;
+//			count++;
+//		}
 
 	m_icount -= count<<m_cyc_movem_l;
 
@@ -5200,12 +5198,12 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	u32 ea = EA_PCIX_32();
 	u32 count = 0;
 
-	for(; i < 16; i++)
-		if(register_list & (1 << i)) {
-			REG_DA()[i] = m68ki_read_pcrel_32(ea);
-			ea += 4;
-			count++;
-		}
+//	for(; i < 16; i++)
+//		if(register_list & (1 << i)) {
+//			REG_DA()[i] = m68ki_read_pcrel_32(ea);
+//			ea += 4;
+//			count++;
+//		}
 
 	m_icount -= count<<m_cyc_movem_l;
 
@@ -5216,12 +5214,12 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 	u32 ea = M68KMAKE_GET_EA_AY_32;
 	u32 count = 0;
 
-	for(; i < 16; i++)
-		if(register_list & (1 << i)) {
-			REG_DA()[i] = m68ki_read_32(ea);
-			ea += 4;
-			count++;
-		}
+//	for(; i < 16; i++)
+//		if(register_list & (1 << i)) {
+//			REG_DA()[i] = m68ki_read_32(ea);
+//			ea += 4;
+//			count++;
+//		}
 
 	m_icount -= count<<m_cyc_movem_l;
 
@@ -5264,13 +5262,13 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 		u32 word2 = OPER_I_16();
 		u32 ea = M68KMAKE_GET_EA_AY_8;
 
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
-		if(BIT_B(word2)) {             /* Register to memory */
+		m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
+		if(BIT_B(word2)) {             // Register to memory
 			m68ki_write_8_fc(ea, m_dfc, MASK_OUT_ABOVE_8(REG_DA()[(word2 >> 12) & 15]));
-		} else if(BIT_F(word2)) {      /* Memory to address register */
+		} else if(BIT_F(word2)) {      // Memory to address register
 			REG_A()[(word2 >> 12) & 7] = MAKE_INT_8(m68ki_read_8_fc(ea, m_sfc));
 		} else {
-			/* Memory to data register */
+			// Memory to data register
 			REG_D()[(word2 >> 12) & 7] = MASK_OUT_BELOW_8(REG_D()[(word2 >> 12) & 7]) | m68ki_read_8_fc(ea, m_sfc);
 		}
 	} else {
@@ -5284,14 +5282,14 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 		u32 word2 = OPER_I_16();
 		u32 ea = M68KMAKE_GET_EA_AY_8;
 
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
-		if(BIT_B(word2)) {             /* Register to memory */
+		m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
+		if(BIT_B(word2)) {             // Register to memory
 			m68ki_write_8_fc(ea, m_dfc, MASK_OUT_ABOVE_8(REG_DA()[(word2 >> 12) & 15]));
-		} else if(BIT_F(word2)) {      /* Memory to address register */
+		} else if(BIT_F(word2)) {      // Memory to address register
 			REG_A()[(word2 >> 12) & 7] = MAKE_INT_8(m68ki_read_8_fc(ea, m_sfc));
 			m_icount -= 2;
 		} else {
-			/* Memory to data register */
+			// Memory to data register
 			REG_D()[(word2 >> 12) & 7] = MASK_OUT_BELOW_8(REG_D()[(word2 >> 12) & 7]) | m68ki_read_8_fc(ea, m_sfc);
 			m_icount -= 2;
 		}
@@ -5305,13 +5303,13 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 		u32 word2 = OPER_I_16();
 		u32 ea = M68KMAKE_GET_EA_AY_16;
 
-		m68ki_trace_t0();            /* auto-disable (see m68kcpu.h) */
-		if(BIT_B(word2)) {           /* Register to memory */
+		m68ki_trace_t0();            // auto-disable (see m68kcpu.h)
+		if(BIT_B(word2)) {           // Register to memory
 			m68ki_write_16_fc(ea, m_dfc, MASK_OUT_ABOVE_16(REG_DA()[(word2 >> 12) & 15]));
-		} else if(BIT_F(word2)) {    /* Memory to address register */
+		} else if(BIT_F(word2)) {    // Memory to address register
 			REG_A()[(word2 >> 12) & 7] = MAKE_INT_16(m68ki_read_16_fc(ea, m_sfc));
 		} else {
-			/* Memory to data register */
+			// Memory to data register
 			REG_D()[(word2 >> 12) & 7] = MASK_OUT_BELOW_16(REG_D()[(word2 >> 12) & 7]) | m68ki_read_16_fc(ea, m_sfc);
 		}
 	} else {
@@ -5324,14 +5322,14 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 		u32 word2 = OPER_I_16();
 		u32 ea = M68KMAKE_GET_EA_AY_16;
 
-		m68ki_trace_t0();            /* auto-disable (see m68kcpu.h) */
-		if(BIT_B(word2)) {           /* Register to memory */
+		m68ki_trace_t0();            // auto-disable (see m68kcpu.h)
+		if(BIT_B(word2)) {           // Register to memory
 			m68ki_write_16_fc(ea, m_dfc, MASK_OUT_ABOVE_16(REG_DA()[(word2 >> 12) & 15]));
-		} else if(BIT_F(word2)) {    /* Memory to address register */
+		} else if(BIT_F(word2)) {    // Memory to address register
 			REG_A()[(word2 >> 12) & 7] = MAKE_INT_16(m68ki_read_16_fc(ea, m_sfc));
 			m_icount -= 2;
 		} else {
-			/* Memory to data register */
+			// Memory to data register
 			REG_D()[(word2 >> 12) & 7] = MASK_OUT_BELOW_16(REG_D()[(word2 >> 12) & 7]) | m68ki_read_16_fc(ea, m_sfc);
 			m_icount -= 2;
 		}
@@ -5345,11 +5343,11 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 		u32 word2 = OPER_I_16();
 		u32 ea = M68KMAKE_GET_EA_AY_32;
 
-		m68ki_trace_t0();            /* auto-disable (see m68kcpu.h) */
-		if(BIT_B(word2)) {           /* Register to memory */
+		m68ki_trace_t0();            // auto-disable (see m68kcpu.h)
+		if(BIT_B(word2)) {           // Register to memory
 			m68ki_write_32_fc(ea, m_dfc, REG_DA()[(word2 >> 12) & 15]);
 		} else {
-			/* Memory to register */
+			// Memory to register
 			REG_DA()[(word2 >> 12) & 15] = m68ki_read_32_fc(ea, m_sfc);
 		}
 	} else {
@@ -5362,12 +5360,12 @@ e3c0 ffc0 lsl      w A+-DXWL    071:8 234fc:5
 		u32 word2 = OPER_I_16();
 		u32 ea = M68KMAKE_GET_EA_AY_32;
 
-		m68ki_trace_t0();            /* auto-disable (see m68kcpu.h) */
-		if(BIT_B(word2)) {           /* Register to memory */
+		m68ki_trace_t0();            // auto-disable (see m68kcpu.h)
+		if(BIT_B(word2)) {           // Register to memory
 			m68ki_write_32_fc(ea, m_dfc, REG_DA()[(word2 >> 12) & 15]);
 			m_icount -= 2;
 		} else {
-			/* Memory to register */
+			// Memory to register
 			REG_DA()[(word2 >> 12) & 15] = m68ki_read_32_fc(ea, m_sfc);
 			m_icount -= 2;
 		}
@@ -5454,7 +5452,7 @@ c0c0 f1c0 mulu     w A+-DXWLdxI 07:54 1:30 234fc:27
 
 	m_c_flag = CFLAG_CLEAR;
 
-	if(BIT_B(word2)) {               /* signed */
+	if(BIT_B(word2)) {               // signed
 		res = (s64)((s32)src) * (s64)((s32)dst);
 		if(!BIT_A(word2)) {
 			m_not_z_flag = MASK_OUT_ABOVE_32(res);
@@ -5496,7 +5494,7 @@ c0c0 f1c0 mulu     w A+-DXWLdxI 07:54 1:30 234fc:27
 
 	m_c_flag = CFLAG_CLEAR;
 
-	if(BIT_B(word2)) {               /* signed */
+	if(BIT_B(word2)) {               // signed
 		res = (s64)((s32)src) * (s64)((s32)dst);
 		if(!BIT_A(word2)) {
 			m_not_z_flag = MASK_OUT_ABOVE_32(res);
@@ -5534,14 +5532,14 @@ c0c0 f1c0 mulu     w A+-DXWLdxI 07:54 1:30 234fc:27
 	u32 res = -dst - XFLAG_1();
 
 	if(res != 0) {
-		m_v_flag = res; /* Undefined V behavior */
+		m_v_flag = res; // Undefined V behavior
 
 		if(((res|dst) & 0x0f) == 0)
 			res = (res & 0xf0) | 6;
 
 		res = MASK_OUT_ABOVE_8(res + 0x9a);
 
-		m_v_flag &= ~res; /* Undefined V behavior part II */
+		m_v_flag &= ~res; // Undefined V behavior part II
 
 		*r_dst = MASK_OUT_BELOW_8(*r_dst) | res;
 
@@ -5553,7 +5551,7 @@ c0c0 f1c0 mulu     w A+-DXWLdxI 07:54 1:30 234fc:27
 		m_c_flag = CFLAG_CLEAR;
 		m_x_flag = XFLAG_CLEAR;
 	}
-	m_n_flag = NFLAG_8(res);  /* Undefined N behavior */
+	m_n_flag = NFLAG_8(res);  // Undefined N behavior
 
 
 4800 ffc0 nbcd     b A+-DXWL    071:8 234fc:6
@@ -5562,14 +5560,14 @@ c0c0 f1c0 mulu     w A+-DXWLdxI 07:54 1:30 234fc:27
 	u32 res = -dst - XFLAG_1();
 
 	if(res != 0) {
-		m_v_flag = res; /* Undefined V behavior */
+		m_v_flag = res; // Undefined V behavior
 
 		if(((res|dst) & 0x0f) == 0)
 			res = (res & 0xf0) | 6;
 
 		res = MASK_OUT_ABOVE_8(res + 0x9a);
 
-		m_v_flag &= ~res; /* Undefined V behavior part II */
+		m_v_flag &= ~res; // Undefined V behavior part II
 
 		m68ki_write_8(ea, MASK_OUT_ABOVE_8(res));
 
@@ -5581,7 +5579,7 @@ c0c0 f1c0 mulu     w A+-DXWLdxI 07:54 1:30 234fc:27
 		m_c_flag = CFLAG_CLEAR;
 		m_x_flag = XFLAG_CLEAR;
 	}
-	m_n_flag = NFLAG_8(res);  /* Undefined N behavior */
+	m_n_flag = NFLAG_8(res);  // Undefined N behavior
 
 
 4400 fff8 neg      b .          071:4 234fc:2
@@ -5747,7 +5745,7 @@ c0c0 f1c0 mulu     w A+-DXWLdxI 07:54 1:30 234fc:27
 
 
 4e71 ffff nop      . .          071:4 234fc:2
-	m68ki_trace_t0();                  /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();                  // auto-disable (see m68kcpu.h)
 
 
 4600 fff8 not      b .          071:4 234fc:2
@@ -5983,14 +5981,14 @@ c0c0 f1c0 mulu     w A+-DXWLdxI 07:54 1:30 234fc:27
 007c ffff ori      w .          07:20p 1:16p 234fc:12p
 	if(m_s_flag) {
 		u32 src = OPER_I_16();
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 		m68ki_set_sr(m68ki_get_sr() | src);
 	} else {
 		m68ki_exception_privilege_violation();
 	}
 
 8140 f1f8 pack     w .          234fc:6
-	/* Note: DX() and DY() are reversed in Motorola's docs */
+	// Note: DX() and DY() are reversed in Motorola's docs
 	u32 src = DY() + OPER_I_16();
 	u32* r_dst = &DX();
 
@@ -5998,7 +5996,7 @@ c0c0 f1c0 mulu     w A+-DXWLdxI 07:54 1:30 234fc:27
 
 
 8f48 fff8 pack     w .          234fc:13
-	/* Note: AX and AY are reversed in Motorola's docs */
+	// Note: AX and AY are reversed in Motorola's docs
 	u32 ea_src = EA_AY_PD_8();
 	u32 src = m68ki_read_8(ea_src);
 	ea_src = EA_AY_PD_8();
@@ -6008,7 +6006,7 @@ c0c0 f1c0 mulu     w A+-DXWLdxI 07:54 1:30 234fc:27
 
 
 814f f1ff pack     w .          234fc:13
-	/* Note: AX and AY are reversed in Motorola's docs */
+	// Note: AX and AY are reversed in Motorola's docs
 	u32 ea_src = EA_A7_PD_8();
 	u32 src = m68ki_read_8(ea_src);
 	ea_src = EA_A7_PD_8();
@@ -6027,7 +6025,7 @@ c0c0 f1c0 mulu     w A+-DXWLdxI 07:54 1:30 234fc:27
 
 
 8148 f1f8 pack     w .          234fc:13
-	/* Note: AX and AY are reversed in Motorola's docs */
+	// Note: AX and AY are reversed in Motorola's docs
 	u32 ea_src = EA_AY_PD_8();
 	u32 src = m68ki_read_8(ea_src);
 	ea_src = EA_AY_PD_8();
@@ -6686,7 +6684,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 4e74 ffff rtd      l .          1:16 234fc:10
 	u32 new_pc = m68ki_pull_32();
 
-	m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 	REG_A()[7] = MASK_OUT_ABOVE_32(REG_A()[7] + MAKE_INT_16(OPER_I_16()));
 	m68ki_jump(new_pc);
 
@@ -6698,7 +6696,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 		if (!m_rte_instr_callback.isnull())
 			(m_rte_instr_callback)(1);
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 
 		new_sr = m68ki_pull_16();
 		new_pc = m68ki_pull_32();
@@ -6720,13 +6718,13 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 		if (!m_rte_instr_callback.isnull())
 			(m_rte_instr_callback)(1);
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 
 		format_word = m68ki_read_16(REG_A()[7]+6) >> 12;
 		if(format_word == 0) {
 			new_sr = m68ki_pull_16();
 			new_pc = m68ki_pull_32();
-			m68ki_fake_pull_16();   /* format word */
+			m68ki_fake_pull_16();   // format word
 			m68ki_jump(new_pc);
 			m68ki_set_sr(new_sr);
 			m_instr_mode = INSTRUCTION_YES;
@@ -6734,7 +6732,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 		} else {
 			m_instr_mode = INSTRUCTION_YES;
 			m_run_mode = RUN_MODE_NORMAL;
-			/* Not handling bus fault (9) */
+			// Not handling bus fault (9)
 			m68ki_exception_format_error();
 		}
 	} else {
@@ -6749,76 +6747,76 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 		if (!m_rte_instr_callback.isnull())
 			(m_rte_instr_callback)(1);
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 
 	rte_loop:
 		format_word = m68ki_read_16(REG_A()[7]+6) >> 12;
 		switch(format_word) {
-		case 0: /* Normal */
+		case 0: // Normal
 			new_sr = m68ki_pull_16();
 			new_pc = m68ki_pull_32();
-			m68ki_fake_pull_16();   /* format word */
+			m68ki_fake_pull_16();   // format word
 			m68ki_jump(new_pc);
 			m68ki_set_sr(new_sr);
 			m_instr_mode = INSTRUCTION_YES;
 			m_run_mode = RUN_MODE_NORMAL;
 			break;
 
-		case 1: /* Throwaway */
+		case 1: // Throwaway
 			new_sr = m68ki_pull_16();
-			m68ki_fake_pull_32();   /* program counter */
-			m68ki_fake_pull_16();   /* format word */
+			m68ki_fake_pull_32();   // program counter
+			m68ki_fake_pull_16();   // format word
 			m68ki_set_sr_noint(new_sr);
 			goto rte_loop;
 
-		case 2: /* Trap */
+		case 2: // Trap
 			new_sr = m68ki_pull_16();
 			new_pc = m68ki_pull_32();
-			m68ki_fake_pull_16();   /* format word */
-			m68ki_fake_pull_32();   /* address */
+			m68ki_fake_pull_16();   // format word
+			m68ki_fake_pull_32();   // address
 			m68ki_jump(new_pc);
 			m68ki_set_sr(new_sr);
 			m_instr_mode = INSTRUCTION_YES;
 			m_run_mode = RUN_MODE_NORMAL;
 			break;
 
-		case 7: /* 68040 access error */
+		case 7: // 68040 access error
 			new_sr = m68ki_pull_16();
 			new_pc = m68ki_pull_32();
-			m68ki_fake_pull_16();   /* $06: format word */
-			m68ki_fake_pull_32();   /* $08: effective address */
-			m68ki_fake_pull_16();   /* $0c: special status word */
-			m68ki_fake_pull_16();   /* $0e: wb3s */
-			m68ki_fake_pull_16();   /* $10: wb2s */
-			m68ki_fake_pull_16();   /* $12: wb1s */
-			m68ki_fake_pull_32();   /* $14: data fault address */
-			m68ki_fake_pull_32();   /* $18: wb3a */
-			m68ki_fake_pull_32();   /* $1c: wb3d */
-			m68ki_fake_pull_32();   /* $20: wb2a */
-			m68ki_fake_pull_32();   /* $24: wb2d */
-			m68ki_fake_pull_32();   /* $28: wb1a */
-			m68ki_fake_pull_32();   /* $2c: wb1d/pd0 */
-			m68ki_fake_pull_32();   /* $30: pd1 */
-			m68ki_fake_pull_32();   /* $34: pd2 */
-			m68ki_fake_pull_32();   /* $38: pd3 */
+			m68ki_fake_pull_16();   // $06: format word
+			m68ki_fake_pull_32();   // $08: effective address
+			m68ki_fake_pull_16();   // $0c: special status word
+			m68ki_fake_pull_16();   // $0e: wb3s
+			m68ki_fake_pull_16();   // $10: wb2s
+			m68ki_fake_pull_16();   // $12: wb1s
+			m68ki_fake_pull_32();   // $14: data fault address
+			m68ki_fake_pull_32();   // $18: wb3a
+			m68ki_fake_pull_32();   // $1c: wb3d
+			m68ki_fake_pull_32();   // $20: wb2a
+			m68ki_fake_pull_32();   // $24: wb2d
+			m68ki_fake_pull_32();   // $28: wb1a
+			m68ki_fake_pull_32();   // $2c: wb1d/pd0
+			m68ki_fake_pull_32();   // $30: pd1
+			m68ki_fake_pull_32();   // $34: pd2
+			m68ki_fake_pull_32();   // $38: pd3
 			m68ki_jump(new_pc);
 			m68ki_set_sr(new_sr);
 			m_instr_mode = INSTRUCTION_YES;
 			m_run_mode = RUN_MODE_NORMAL;
 			break;
 
-		case 0x0a: /* Bus Error at instruction boundary */
+		case 0x0a: // Bus Error at instruction boundary
 			new_sr = m68ki_pull_16();
 			new_pc = m68ki_pull_32();
-			m68ki_fake_pull_16();   /* $06: format word */
-			m68ki_fake_pull_16();   /* $08: internal register */
-			m68ki_fake_pull_16();   /* $0a: special status word */
-			m68ki_fake_pull_16();   /* $0c: instruction pipe stage c */
-			m68ki_fake_pull_16();   /* $0e: instruction pipe stage b */
-			m68ki_fake_pull_32();   /* $10: data fault address */
-			m68ki_fake_pull_32();   /* $14: internal registers */
-			m68ki_fake_pull_32();   /* $18: data output buffer */
-			m68ki_fake_pull_32();   /* $1c: internal registers */
+			m68ki_fake_pull_16();   // $06: format word
+			m68ki_fake_pull_16();   // $08: internal register
+			m68ki_fake_pull_16();   // $0a: special status word
+			m68ki_fake_pull_16();   // $0c: instruction pipe stage c
+			m68ki_fake_pull_16();   // $0e: instruction pipe stage b
+			m68ki_fake_pull_32();   // $10: data fault address
+			m68ki_fake_pull_32();   // $14: internal registers
+			m68ki_fake_pull_32();   // $18: data output buffer
+			m68ki_fake_pull_32();   // $1c: internal registers
 
 			m68ki_jump(new_pc);
 			m68ki_set_sr(new_sr);
@@ -6826,34 +6824,34 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 			m_run_mode = RUN_MODE_NORMAL;
 			break;
 
-		case 0x0b: /* Bus Error - Instruction Execution in Progress */
+		case 0x0b: // Bus Error - Instruction Execution in Progress
 			new_sr = m68ki_pull_16();
 			new_pc = m68ki_pull_32();
-			m68ki_fake_pull_16();   /* $06: format word */
-			m68ki_fake_pull_16();   /* $08: internal register */
-			m68ki_fake_pull_16();   /* $0a: special status word */
-			m68ki_fake_pull_16();   /* $0c: instruction pipe stage c */
-			m68ki_fake_pull_16();   /* $0e: instruction pipe stage b */
-			m68ki_fake_pull_32();   /* $10: data fault address */
-			m68ki_fake_pull_32();   /* $14: internal registers */
-			m68ki_fake_pull_32();   /* $18: data output buffer */
-			m68ki_fake_pull_32();   /* $1c: internal registers */
-			m68ki_fake_pull_32();   /* $20:  */
-			m68ki_fake_pull_32();   /* $24: stage B address */
-			m68ki_fake_pull_32();   /* $28:  */
-			m68ki_fake_pull_32();   /* $2c: data input buffer */
-			m68ki_fake_pull_32();   /* $30:  */
-			m68ki_fake_pull_16();   /* $34:  */
-			m68ki_fake_pull_16();   /* $36: version #, internal information */
-			m68ki_fake_pull_32();   /* $38:  */
-			m68ki_fake_pull_32();   /* $3c:  */
-			m68ki_fake_pull_32();   /* $40:  */
-			m68ki_fake_pull_32();   /* $44:  */
-			m68ki_fake_pull_32();   /* $48:  */
-			m68ki_fake_pull_32();   /* $4c:  */
-			m68ki_fake_pull_32();   /* $50:  */
-			m68ki_fake_pull_32();   /* $54:  */
-			m68ki_fake_pull_32();   /* $58:  */
+			m68ki_fake_pull_16();   // $06: format word
+			m68ki_fake_pull_16();   // $08: internal register
+			m68ki_fake_pull_16();   // $0a: special status word
+			m68ki_fake_pull_16();   // $0c: instruction pipe stage c
+			m68ki_fake_pull_16();   // $0e: instruction pipe stage b
+			m68ki_fake_pull_32();   // $10: data fault address
+			m68ki_fake_pull_32();   // $14: internal registers
+			m68ki_fake_pull_32();   // $18: data output buffer
+			m68ki_fake_pull_32();   // $1c: internal registers
+			m68ki_fake_pull_32();   // $20:
+			m68ki_fake_pull_32();   // $24: stage B address
+			m68ki_fake_pull_32();   // $28:
+			m68ki_fake_pull_32();   // $2c: data input buffer
+			m68ki_fake_pull_32();   // $30:
+			m68ki_fake_pull_16();   // $34:
+			m68ki_fake_pull_16();   // $36: version #, internal information
+			m68ki_fake_pull_32();   // $38:
+			m68ki_fake_pull_32();   // $3c:
+			m68ki_fake_pull_32();   // $40:
+			m68ki_fake_pull_32();   // $44:
+			m68ki_fake_pull_32();   // $48:
+			m68ki_fake_pull_32();   // $4c:
+			m68ki_fake_pull_32();   // $50:
+			m68ki_fake_pull_32();   // $54:
+			m68ki_fake_pull_32();   // $58:
 
 			m68ki_jump(new_pc);
 			m68ki_set_sr(new_sr);
@@ -6862,7 +6860,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 			break;
 
 		default:
-			/* Not handling long or short bus fault */
+			// Not handling long or short bus fault
 			m_instr_mode = INSTRUCTION_YES;
 			m_run_mode = RUN_MODE_NORMAL;
 			m68ki_exception_format_error();
@@ -6874,19 +6872,19 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 
 06c0 fff0 rtm      l .          234fc:19
-	m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 	logerror("%s at %08x: called unimplemented instruction %04x (rtm)\n",
 					tag(), m_ppc, m_ir);
 
 
 4e77 ffff rtr      l .          071:20 234fc:14
-	m68ki_trace_t0();                  /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();                  // auto-disable (see m68kcpu.h)
 	m68ki_set_ccr(m68ki_pull_16());
 	m68ki_jump(m68ki_pull_32());
 
 
 4e75 ffff rts      l .          071:16 234fc:10
-	m68ki_trace_t0();                  /* auto-disable (see m68kcpu.h) */
+	m68ki_trace_t0();                  // auto-disable (see m68kcpu.h)
 	m68ki_jump(m68ki_pull_32());
 
 
@@ -6900,7 +6898,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 	if(res > 0xf)
 		corf = 6;
 	res += HIGH_NIBBLE(dst) - HIGH_NIBBLE(src);
-	m_v_flag = res; /* Undefined V behavior */
+	m_v_flag = res; // Undefined V behavior
 	if(res > 0xff) {
 		res += 0xa0;
 		m_x_flag = m_c_flag = CFLAG_SET;
@@ -6911,8 +6909,8 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 	res = MASK_OUT_ABOVE_8(res - corf);
 
-	m_v_flag &= ~res; /* Undefined V behavior part II */
-	m_n_flag = NFLAG_8(res); /* Undefined N behavior */
+	m_v_flag &= ~res; // Undefined V behavior part II
+	m_n_flag = NFLAG_8(res); // Undefined N behavior
 	m_not_z_flag |= res;
 
 	*r_dst = MASK_OUT_BELOW_8(*r_dst) | res;
@@ -6928,7 +6926,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 	if(res > 0xf)
 		corf = 6;
 	res += HIGH_NIBBLE(dst) - HIGH_NIBBLE(src);
-	m_v_flag = res; /* Undefined V behavior */
+	m_v_flag = res; // Undefined V behavior
 	if(res > 0xff) {
 		res += 0xa0;
 		m_x_flag = m_c_flag = CFLAG_SET;
@@ -6939,8 +6937,8 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 	res = MASK_OUT_ABOVE_8(res - corf);
 
-	m_v_flag &= ~res; /* Undefined V behavior part II */
-	m_n_flag = NFLAG_8(res); /* Undefined N behavior */
+	m_v_flag &= ~res; // Undefined V behavior part II
+	m_n_flag = NFLAG_8(res); // Undefined N behavior
 	m_not_z_flag |= res;
 
 	m68ki_write_8(ea, res);
@@ -6956,7 +6954,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 	if(res > 0xf)
 		corf = 6;
 	res += HIGH_NIBBLE(dst) - HIGH_NIBBLE(src);
-	m_v_flag = res; /* Undefined V behavior */
+	m_v_flag = res; // Undefined V behavior
 	if(res > 0xff) {
 		res += 0xa0;
 		m_x_flag = m_c_flag = CFLAG_SET;
@@ -6967,8 +6965,8 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 	res = MASK_OUT_ABOVE_8(res - corf);
 
-	m_v_flag &= ~res; /* Undefined V behavior part II */
-	m_n_flag = NFLAG_8(res); /* Undefined N behavior */
+	m_v_flag &= ~res; // Undefined V behavior part II
+	m_n_flag = NFLAG_8(res); // Undefined N behavior
 	m_not_z_flag |= res;
 
 	m68ki_write_8(ea, res);
@@ -6984,7 +6982,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 	if(res > 0xf)
 		corf = 6;
 	res += HIGH_NIBBLE(dst) - HIGH_NIBBLE(src);
-	m_v_flag = res; /* Undefined V behavior */
+	m_v_flag = res; // Undefined V behavior
 	if(res > 0xff) {
 		res += 0xa0;
 		m_x_flag = m_c_flag = CFLAG_SET;
@@ -6995,8 +6993,8 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 	res = MASK_OUT_ABOVE_8(res - corf);
 
-	m_v_flag &= ~res; /* Undefined V behavior part II */
-	m_n_flag = NFLAG_8(res); /* Undefined N behavior */
+	m_v_flag &= ~res; // Undefined V behavior part II
+	m_n_flag = NFLAG_8(res); // Undefined N behavior
 	m_not_z_flag |= res;
 
 	m68ki_write_8(ea, res);
@@ -7012,7 +7010,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 	if(res > 0xf)
 		corf = 6;
 	res += HIGH_NIBBLE(dst) - HIGH_NIBBLE(src);
-	m_v_flag = res; /* Undefined V behavior */
+	m_v_flag = res; // Undefined V behavior
 	if(res > 0xff) {
 		res += 0xa0;
 		m_x_flag = m_c_flag = CFLAG_SET;
@@ -7023,8 +7021,8 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 	res = MASK_OUT_ABOVE_8(res - corf);
 
-	m_v_flag &= ~res; /* Undefined V behavior part II */
-	m_n_flag = NFLAG_8(res); /* Undefined N behavior */
+	m_v_flag &= ~res; // Undefined V behavior part II
+	m_n_flag = NFLAG_8(res); // Undefined N behavior
 	m_not_z_flag |= res;
 
 	m68ki_write_8(ea, res);
@@ -7063,7 +7061,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 4e72 ffff stop     . .          071:4p 234fc:8p
 	if(m_s_flag) {
 		u32 new_sr = OPER_I_16();
-		m68ki_trace_t0();              /* auto-disable (see m68kcpu.h) */
+		m68ki_trace_t0();              // auto-disable (see m68kcpu.h)
 		m_stopped |= STOP_LEVEL_STOP;
 		m68ki_set_sr(new_sr);
 		m_icount = 0;
@@ -7619,11 +7617,11 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 	m_v_flag = VFLAG_CLEAR;
 	m_c_flag = CFLAG_CLEAR;
 
-	/* On the 68000 and 68010, the TAS instruction uses a unique bus cycle that may have
+	// On the 68000 and 68010, the TAS instruction uses a unique bus cycle that may have
 	   side effects (e.g. delaying DMA) or may fail to write back at all depending on the
 	   bus implementation.
 	   In particular, the Genesis/Megadrive games Gargoyles and Ex-Mutants need the TAS
-	   to fail to write back in order to function properly. */
+	   to fail to write back in order to function properly.
 	if (CPU_TYPE_IS_010_LESS() && !m_tas_write_callback.isnull())
 		(m_tas_write_callback)(*m_program, ea, dst | 0x80, 0xff);
 	else
@@ -7631,20 +7629,20 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 
 4e40 fff0 trap     . .          071234fc:4
-	/* Trap#n stacks exception frame type 0 */
-	m68ki_exception_trapN(EXCEPTION_TRAP_BASE + (m_ir & 0xf));    /* HJB 990403 */
+	// Trap#n stacks exception frame type 0
+	m68ki_exception_trapN(EXCEPTION_TRAP_BASE + (m_ir & 0xf));    // HJB 990403
 
 
 50fc ffff trapt    . .          234fc:4
-	m68ki_exception_trap(EXCEPTION_TRAPV);  /* HJB 990403 */
+	m68ki_exception_trap(EXCEPTION_TRAPV);  // HJB 990403
 
 
 50fa ffff trapt    w .          234fc:6
-	m68ki_exception_trap(EXCEPTION_TRAPV);  /* HJB 990403 */
+	m68ki_exception_trap(EXCEPTION_TRAPV);  // HJB 990403
 
 
 50fb ffff trapt    l .          234fc:8
-	m68ki_exception_trap(EXCEPTION_TRAPV);  /* HJB 990403 */
+	m68ki_exception_trap(EXCEPTION_TRAPV);  // HJB 990403
 
 
 51fc ffff trapf    . .          234fc:4
@@ -7660,12 +7658,12 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 50fc f0ff trapcc   . .          234fc:4
 	if(M68KMAKE_CC)
-		m68ki_exception_trap(EXCEPTION_TRAPV);  /* HJB 990403 */
+		m68ki_exception_trap(EXCEPTION_TRAPV);  // HJB 990403
 
 
 50fa f0ff trapcc   w .          234fc:6
 	if(M68KMAKE_CC) {
-		m68ki_exception_trap(EXCEPTION_TRAPV);  /* HJB 990403 */
+		m68ki_exception_trap(EXCEPTION_TRAPV);  // HJB 990403
 	} else {
 		m_pc += 2;
 	}
@@ -7673,7 +7671,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 50fb f0ff trapcc   l .          234fc:8
 	if(M68KMAKE_CC) {
-		m68ki_exception_trap(EXCEPTION_TRAPV);  /* HJB 990403 */
+		m68ki_exception_trap(EXCEPTION_TRAPV);  // HJB 990403
 	} else {
 		m_pc += 4;
 	}
@@ -7681,7 +7679,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 4e76 ffff trapv    . .          071234fc:4
 	if(!COND_VC()) {
-		m68ki_exception_trap(EXCEPTION_TRAPV);  /* HJB 990403 */
+		m68ki_exception_trap(EXCEPTION_TRAPV);  // HJB 990403
 	}
 
 
@@ -7850,7 +7848,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 
 8180 f1f8 unpk     w .          234fc:8
-	/* Note: DX() and DY() are reversed in Motorola's docs */
+	// Note: DX() and DY() are reversed in Motorola's docs
 	u32 src = DY();
 	u32* r_dst = &DX();
 
@@ -7858,7 +7856,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 
 8f88 fff8 unpk     w .          234fc:13
-	/* Note: AX and AY are reversed in Motorola's docs */
+	// Note: AX and AY are reversed in Motorola's docs
 	u32 src = OPER_AY_PD_8();
 	u32 ea_dst;
 
@@ -7870,7 +7868,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 
 818f f1ff unpk     w .          234fc:13
-	/* Note: AX and AY are reversed in Motorola's docs */
+	// Note: AX and AY are reversed in Motorola's docs
 	u32 src = OPER_A7_PD_8();
 	u32 ea_dst;
 
@@ -7893,7 +7891,7 @@ e5c0 ffc0 roxl     w A+-DXWL    071:8 234fc:5
 
 
 8188 f1f8 unpk     w .          234fc:13
-	/* Note: AX and AY are reversed in Motorola's docs */
+	// Note: AX and AY are reversed in Motorola's docs
 	u32 src = OPER_AY_PD_8();
 	u32 ea_dst;
 

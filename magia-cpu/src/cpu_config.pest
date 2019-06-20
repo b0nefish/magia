@@ -24,7 +24,7 @@ rule = { (
     hex ~ hex ~ name ~ size ~ allowed_eas ~ (type_cycle)*
 ) }
 
-code = { ("\t") ~ (!(("\r") | ("\n")) ~ ANY)* ~ (("\n") | ("\r\n") | ("\r")) }
+code = { ("\t") ~ (!(";") ~ ANY)* ~ (";") }
 
 allowed_ea = { (
     ea_not_present |
@@ -41,12 +41,12 @@ allowed_ea = { (
 ) }
 
 privl = @{ ("p") }
-type_cycle = @{ (number | ("f") | ("c"))* ~ (":") ~ number ~ privl? }
+type_cycle = @{ (number | ("f") | ("c"))* ~ (":") ~ (number)+ ~ privl? }
 allowed_eas = @{ (allowed_ea)* }
 size = @{ (size_unsized | size_byte | size_word | size_long) }
 
 number = @{ ('0' .. '9') }
-hex = @{ ('a'..'f') ~ (('a'..'f') | number)* }
+hex = @{ (('a'..'f') | number) ~ (('a'..'f') | number)* }
 name = @{ (('a'..'z') | number) ~ (('a'..'z') | number)* }
 
 WHITESPACE = _{ (" ") | ("\r") | ("\n") }
